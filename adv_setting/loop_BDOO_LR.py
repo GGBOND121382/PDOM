@@ -1,10 +1,13 @@
 from sklearn.datasets import load_diabetes
 import numpy as np
+from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
+import torch
 
 from optimization_utils.BanditLogisticRegression import run_algorithm2_bandit_paper_params
 from optimization_utils.BanditLogisticRegression_v1 import _prepare_binary_labels, _split_dataset_round_robin, \
     make_logistic_loss_oracle, _compute_logistic_constants
+from optimization_utils.config_save_load import conf_load
 
 
 # assume run_bandit_logistic_regression is defined in this file
@@ -129,7 +132,31 @@ def run_bandit_logistic_regression(
 
 
 
+def load_dataset_from_conf():
+    """Load and preprocess dataset based on ``adv_setting/conf.ini`` settings."""
+
+    conf_dict = conf_load()
+    data = conf_dict["data"]
+    target = conf_dict["target"]
+    is_minus_one = conf_dict["is_minus_one"]
+
+    X = torch.load(data, weights_only=False)
+    X = MaxAbsScaler().fit_transform(X)
+    X = preprocessing.normalize(X, norm="l2")
+
+    y = torch.load(target, weights_only=False)
+    y = np.array(y, dtype=int)
+    if is_minus_one:
+        # Transform labels from {-1, 1} to {0, 1} when needed.
+        y = (y + 1) / 2
+    y = np.array(y, dtype=int).reshape(-1)
+
+    return conf_dict, X, y
+
+
 if __name__ == '__main__':
+    conf_dict, X_loaded, y_loaded = load_dataset_from_conf()
+
     R = 10.0  # feasible region radius
     r = R  # inner-ball radius (choose any 0 < r < R)
     rho = 0.5  # or whatever you use from theory / tuning
@@ -137,10 +164,10 @@ if __name__ == '__main__':
     T = 20000  # for KDDCup99, or 12500 for Diabetes
 
     w_hat, X_hist, losses, acc = run_bandit_logistic_regression(
-        X_preprocessed,  # your dataset matrix
-        y_labels,  # raw labels
+        X_loaded,
+        y_loaded,
         T=T,
-        num_nodes=8,
+        num_nodes=conf_dict.get("number_of_clients", 8),
         R=R,
         r=r,
         rho=rho,
