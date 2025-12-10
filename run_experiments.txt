@@ -1,0 +1,37 @@
+ÏÂÔØ£º
+scp -r user@s1.linkc.ml:/home/user/jdLiu/TDOCO/adv_setting/plot_data .
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/TDOCO/iid_setting/plot_data ./iid_setting
+
+scp -r user@s3.linkc.ml:/home/user/jdLiu/PDOM-upload/iid_setting/plot_data .
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/PDOM-upload/adv_setting/plot_data .
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/PDOM/adv_setting s1/
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/PDOM/iid_setting s1/
+
+scp -r user@s3.linkc.ml:/home/user/jdLiu/PDOM/adv_setting s3/
+
+scp -r user@s3.linkc.ml:/home/user/jdLiu/PDOM/iid_setting s3/
+
+scp -r user@s4.linkc.ml:/home/user/jdLiu/PDOM/adv_setting s4/
+
+scp -r user@s4.linkc.ml:/home/user/jdLiu/PDOM/iid_setting s4/
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/PDOM/adv_setting .
+
+scp -r user@s1.linkc.ml:/home/user/jdLiu/PDOM/iid_setting .
+
+scp -r user@s3.linkc.ml:/home/user/jdLiu/PDOM .
+
+ÉÏ´«£º
+scp -r iid_setting_clique user@s1.linkc.ml:/home/user/jdLiu/TDOCO/
+
+scp -r PDOM-upload user@s4.linkc.ml:/home/user/jdLiu/
+
+scp -r PDOM user@jump.linkc.ml:/home/user/jdLiu/
+
+scp -r adv_setting user@s3.linkc.ml:/home/user/jdLiu/PDOM/
+
+scp -r iid_setting user@s3.linkc.ml:/home/user/jdLiu/PDOM/
