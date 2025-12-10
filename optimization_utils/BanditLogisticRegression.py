@@ -72,6 +72,44 @@ def _build_er_gossip_matrix(
     return P
 
 
+def _build_gossip_matrix(adj: np.ndarray, a: float) -> np.ndarray:
+    """
+    Build the row-stochastic gossip matrix matching
+    mixed = (1 - a * deg_i) * Y[i] + a * sum_{j in N(i)} Y[j].
+
+    Parameters
+    ----------
+    adj : np.ndarray of bool
+        Symmetric adjacency matrix without self-loops.
+    a : float
+        Consensus weight.
+    """
+    num_nodes = adj.shape[0]
+    P = np.zeros((num_nodes, num_nodes), dtype=float)
+    degrees = adj.sum(axis=1)
+
+    for i in range(num_nodes):
+        neighbors = np.where(adj[i])[0]
+        deg_i = len(neighbors)
+
+        if deg_i == 0:
+            P[i, i] = 1.0
+            continue
+
+        P[i, i] = 1.0 - a * deg_i
+        for j in neighbors:
+            P[i, j] += a
+
+    return P
+
+
+def _compute_max_degree(adj: np.ndarray) -> float:
+    """Return the maximum degree of the (boolean) adjacency matrix."""
+    if adj.size == 0:
+        return 0.0
+    return float(adj.sum(axis=1).max(initial=0))
+
+
 def _build_cycle_graph(num_nodes: int) -> np.ndarray:
     """
     Build an undirected cycle graph on {0, ..., num_nodes-1}.
@@ -146,8 +184,8 @@ def run_algorithm2_bandit_paper_params(
     setting : {"convex", "strongly_convex"}
         Which case to use: convex or strongly_convex.
     a : float, optional
-        Consensus weight. If None, defaults to 1 / num_nodes
-        (valid for complete/cycle graphs with bounded degree).
+        Consensus weight. If None, defaults to 1 / (1 + max_degree) of the
+        fixed communication graph.
     p_edge : float
         Used only if graph_mode == "er".
     graph_mode : {"cycle", "er"}
@@ -168,11 +206,6 @@ def run_algorithm2_bandit_paper_params(
     """
     if rng is None:
         rng = np.random.default_rng()
-
-    if a is None:
-        # Simple default: for bounded-degree graphs, 1 / (1 + max_degree).
-        # For the 8-node cycle (deg_i = 2), this is 1/3, stable and standard.
-        a = 1.0 / float(num_nodes)
 
     # ====== Hyperparameters (same as before) ======
     N = num_nodes
@@ -236,6 +269,19 @@ def run_algorithm2_bandit_paper_params(
     else:
         adj_fixed = None  # will sample ER each round
 
+    if a is None:
+        if adj_fixed is None:
+            raise ValueError(
+                "Default consensus weight requires a fixed adjacency; "
+                "please supply 'a' explicitly."
+            )
+        max_degree = _compute_max_degree(adj_fixed)
+        a = 1.0 / (1.0 + max_degree)
+
+    gossip_fixed = None
+    if adj_fixed is not None:
+        gossip_fixed = _build_gossip_matrix(adj_fixed, a)
+
     # ====== Main algorithm ======
     X_hist = np.zeros((T + 1, num_nodes, dim), dtype=float)  # x_{i,1} = 0
     losses = np.zeros((T, num_nodes), dtype=float)
@@ -270,20 +316,16 @@ def run_algorithm2_bandit_paper_params(
         # 5) communication graph
         if adj_fixed is not None:
             adj = adj_fixed
-        # else:
-        #     adj = _sample_er_graph(num_nodes, p_edge, rng)
+            mixed_all = gossip_fixed @ Y
+        else:
+            raise ValueError(
+                "Time-varying ER graphs are not currently supported in this implementation."
+            )
 
         # 6) consensus + projection onto (1 - ξ)K
         X_next = np.zeros_like(x_t)
         for i in range(num_nodes):
-            neighbors = np.where(adj[i])[0]
-            deg_i = len(neighbors)
-
-            if deg_i == 0:
-                mixed = Y[i]
-            else:
-                mixed = (1.0 - a * deg_i) * Y[i] + a * Y[neighbors].sum(axis=0)
-
+            mixed = mixed_all[i]
             X_next[i] = _proj_l2_ball(mixed, R_shrunk)
 
         X_hist[t] = X_next

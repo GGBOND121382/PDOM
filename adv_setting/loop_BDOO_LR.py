@@ -4,7 +4,12 @@ from sklearn import preprocessing
 from sklearn.preprocessing import MaxAbsScaler
 import torch
 
-from optimization_utils.BanditLogisticRegression import run_algorithm2_bandit_paper_params
+from optimization_utils.BanditLogisticRegression import (
+    _build_cycle_graph,
+    _build_gossip_matrix,
+    _compute_max_degree,
+    run_algorithm2_bandit_paper_params,
+)
 from optimization_utils.BanditLogisticRegression_v1 import _prepare_binary_labels, _split_dataset_round_robin, \
     make_logistic_loss_oracle, _compute_logistic_constants
 from optimization_utils.config_save_load import conf_load
@@ -20,7 +25,7 @@ def run_bandit_logistic_regression(
     num_nodes: int,
     R: float,
     r: float,
-    rho: float,
+    rho: float = None,
     alpha_reg: float = 0.0,
     p_edge: float = 0.5,
     a: float = None,
@@ -40,11 +45,14 @@ def run_bandit_logistic_regression(
     T : time horizon (rounds of Algorithm 2).
     num_nodes : number of nodes N.
     R, r : geometry of K: rB ⊆ K ⊆ RB.
-    rho : network connectivity parameter for BDOO.
+    rho : network connectivity parameter for BDOO. If None, set to the
+        second-largest eigenvalue of the gossip matrix induced by the
+        cycle graph and consensus weight ``a``.
     alpha_reg : L2 coefficient in 0.5 * alpha_reg * ||w||^2
                 (set 0 to remove regularization).
     p_edge : ER edge probability (used only if graph_mode="er").
-    a : consensus weight (defaults to 1/N inside BDOO if None).
+    a : consensus weight (defaults to 1 / (1 + max_degree) for the cycle graph
+        if None).
     setting : "convex" or "strongly_convex"; if None:
               - "convex"  if alpha_reg == 0
               - "strongly_convex" if alpha_reg > 0
@@ -99,6 +107,18 @@ def run_bandit_logistic_regression(
     else:
         alpha_sc = None
 
+    if graph_mode != "cycle":
+        raise ValueError("rho computation currently supports only the cycle graph mode.")
+
+    base_adj = _build_cycle_graph(num_nodes)
+    if a is None:
+        a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    rho_value = float(eigenvalues_sorted[1])
+
     # 6) run BDOO (Algorithm 2)
     X_hist, losses = run_algorithm2_bandit_paper_params(
         loss_oracle=loss_oracle,
@@ -109,7 +129,7 @@ def run_bandit_logistic_regression(
         r=r,
         L_f=L_f,
         C=C,
-        rho=rho,
+        rho=rho_value if rho is None else rho,
         alpha=alpha_sc,
         setting=setting,
         a=a,
@@ -159,7 +179,6 @@ if __name__ == '__main__':
 
     R = 10.0  # feasible region radius
     r = R  # inner-ball radius (choose any 0 < r < R)
-    rho = 0.5  # or whatever you use from theory / tuning
     alpha_reg = 1e-3  # example; you’ll sweep {1e-1, ..., 1e-5}
     T = 20000  # for KDDCup99, or 12500 for Diabetes
 
@@ -170,7 +189,6 @@ if __name__ == '__main__':
         num_nodes=conf_dict.get("number_of_clients", 8),
         R=R,
         r=r,
-        rho=rho,
         alpha_reg=alpha_reg,
         graph_mode="cycle",  # <<< BDOO: cycle network
         rng=np.random.default_rng(42),
