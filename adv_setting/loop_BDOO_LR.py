@@ -1,8 +1,30 @@
-from sklearn.datasets import load_diabetes
+"""BDOO experiments for linear regression on the bodyfat dataset.
+
+The script follows the implementation details provided in the paper notes:
+
+* Dataset: bodyfat (14 features, 252 instances) loaded from
+  ``data/adv_setting/bodyfat`` in LIBSVM format.
+* Preprocessing: each feature is scaled to [-1, 1] with ``MaxAbsScaler`` and
+  each sample is normalized to unit `\ell_2` length.
+* Task: distributed online (regularized) linear regression with squared loss
+  and optional L2 regularization over an `\ell_2` ball of radius 10.
+* Network: default 8-node cycle graph (each node has two neighbors).
+* Time horizon: by default 20,000 rounds.
+
+The implementation samples data uniformly with replacement for each node and
+time, computes the Lipschitz and loss bounds used by BDOO, and reports the
+resulting mean-squared error on the full dataset.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Callable, Tuple
+
 import numpy as np
 from sklearn import preprocessing
+from sklearn.datasets import load_svmlight_file
 from sklearn.preprocessing import MaxAbsScaler
-import torch
 
 from optimization_utils.BanditLogisticRegression import (
     _build_cycle_graph,
@@ -10,205 +32,185 @@ from optimization_utils.BanditLogisticRegression import (
     _compute_max_degree,
     run_algorithm2_bandit_paper_params,
 )
-from optimization_utils.BanditLogisticRegression_v1 import _prepare_binary_labels, _split_dataset_round_robin, \
-    make_logistic_loss_oracle, _compute_logistic_constants
-from optimization_utils.config_save_load import conf_load
 
 
-# assume run_bandit_logistic_regression is defined in this file
-
-
-def run_bandit_logistic_regression(
-    X: np.ndarray,
-    y: np.ndarray,
-    T: int,
-    num_nodes: int,
-    R: float,
-    r: float,
-    rho: float = None,
-    alpha_reg: float = 0.0,
-    p_edge: float = 0.5,
-    a: float = None,
-    setting: str = None,
-    graph_mode: str = "cycle",   # NEW: default = cycle = BDOO experiments
-    rng: np.random.Generator = None,
-):
-    """
-    Apply BDOO (Algorithm 2 with one-point bandit feedback) to a
-    (regularized) logistic regression task.
+def _load_bodyfat_dataset(dataset_path: Path | str) -> Tuple[np.ndarray, np.ndarray]:
+    """Load and preprocess the bodyfat dataset.
 
     Parameters
     ----------
-    X : (n_samples, d)
-        Preprocessed features (can be raw; we rescale inside).
-    y : targets (any real; will be converted to {-1, +1}).
-    T : time horizon (rounds of Algorithm 2).
-    num_nodes : number of nodes N.
-    R, r : geometry of K: rB ⊆ K ⊆ RB.
-    rho : network connectivity parameter for BDOO. If None, set to the
-        second-largest eigenvalue of the gossip matrix induced by the
-        cycle graph and consensus weight ``a``.
-    alpha_reg : L2 coefficient in 0.5 * alpha_reg * ||w||^2
-                (set 0 to remove regularization).
-    p_edge : ER edge probability (used only if graph_mode="er").
-    a : consensus weight (defaults to 1 / (1 + max_degree) for the cycle graph
-        if None).
-    setting : "convex" or "strongly_convex"; if None:
-              - "convex"  if alpha_reg == 0
-              - "strongly_convex" if alpha_reg > 0
-    graph_mode : {"cycle", "er"}
-        Communication graph mode passed to BDOO.
-    rng : np.random.Generator
+    dataset_path : Path or str
+        Path to the LIBSVM formatted bodyfat dataset file.
 
     Returns
     -------
-    w_hat : np.ndarray, shape (d,)
-        Final global model = average over time and nodes.
-    X_hist : np.ndarray, shape (T+1, N, d)
-        Iterates from BDOO (Algorithm 2).
-    losses : np.ndarray, shape (T, N)
-        Observed bandit losses.
-    acc : float
-        Training accuracy of w_hat on (X, y).
+    X : np.ndarray, shape (n_samples, 14)
+        Scaled features with per-feature MaxAbs scaling to [-1, 1] and
+        per-sample `\ell_2` normalization.
+    y : np.ndarray, shape (n_samples,)
+        Target values as a dense array.
     """
+
+    X_sparse, y = load_svmlight_file(str(dataset_path))
+    X = X_sparse.toarray()
+
+    X = MaxAbsScaler().fit_transform(X)
+    X = preprocessing.normalize(X, norm="l2")
+
+    return X.astype(float), y.astype(float)
+
+
+def _make_loss_oracle(
+    X: np.ndarray,
+    y: np.ndarray,
+    samples: np.ndarray,
+    alpha_reg: float,
+) -> Callable[[int, int, np.ndarray], float]:
+    """Create the loss oracle f(i, t, x) used by BDOO.
+
+    The oracle samples data points according to ``samples`` and evaluates the
+    (regularized) squared loss at the provided query point ``x``.
+    """
+
+    def oracle(i: int, t: int, x: np.ndarray) -> float:
+        idx = samples[t - 1, i]
+        a_i = X[idx]
+        b_i = y[idx]
+        residual = float(np.dot(a_i, x) - b_i)
+        loss = residual * residual
+        if alpha_reg:
+            loss += 0.5 * alpha_reg * float(np.dot(x, x))
+        return loss
+
+    return oracle
+
+
+def _compute_bounds(R: float, alpha_reg: float, max_abs_b: float) -> Tuple[float, float]:
+    """Compute Lipschitz (L_f) and loss bound (C) for squared loss.
+
+    With ``||a||_2 <= 1`` and ``||x||_2 <= R``:
+
+    * |a^T x| <= R
+    * |(a^T x - b)| <= R + |b|
+    * ||grad|| <= 2 (R + |b|) + alpha_reg * R
+    * f(x) <= (R + |b|)^2 + 0.5 * alpha_reg * R^2
+    """
+
+    lip = 2.0 * (R + max_abs_b) + alpha_reg * R
+    loss_bound = (R + max_abs_b) ** 2 + 0.5 * alpha_reg * (R**2)
+    return lip, loss_bound
+
+
+def run_bdoo_linear_regression(
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    T: int = 20000,
+    num_nodes: int = 8,
+    R: float = 10.0,
+    r: float | None = None,
+    alpha_reg: float = 0.0,
+    rng: np.random.Generator | None = None,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Apply BDOO (Algorithm 2) to the linear regression task.
+
+    Parameters
+    ----------
+    X, y : array-like
+        Preprocessed dataset.
+    T : int
+        Time horizon (number of rounds).
+    num_nodes : int
+        Number of learners in the cycle network.
+    R : float
+        Radius of the feasible `\ell_2` ball.
+    r : float, optional
+        Inner ball radius. Defaults to ``R`` when not provided.
+    alpha_reg : float
+        L2 regularization coefficient (0 for convex, 1 for strongly convex
+        experiments as described in the implementation details).
+    rng : np.random.Generator, optional
+        Random generator for reproducibility.
+    """
+
     if rng is None:
         rng = np.random.default_rng()
 
-    # 1) scale features:
-    #    - per-feature to [-1, 1] via MaxAbsScaler
-    #    - per-sample to unit L2 norm, as in the implementation details
-    scaler = MaxAbsScaler()
-    X_scaled = scaler.fit_transform(X.astype(float))
-    row_norms = np.linalg.norm(X_scaled, axis=1, keepdims=True)
-    row_norms[row_norms == 0.0] = 1.0
-    X_scaled = X_scaled / row_norms
-    d = X_scaled.shape[1]
+    if r is None:
+        r = R
 
-    # 2) prepare labels in {-1,+1}, split across nodes (round-robin here;
-    #    you can replace this by your "positive to small i, negative to
-    #    large i + label flipping" logic if you want to exactly match the paper).
-    y_pm = _prepare_binary_labels(y)
-    X_list, y_list = _split_dataset_round_robin(X_scaled, y_pm, num_nodes)
+    n_samples, dim = X.shape
 
-    # 3) loss oracle
-    loss_oracle = make_logistic_loss_oracle(X_list, y_list, alpha_reg=alpha_reg)
+    # Pre-sample which data point each node observes at every round
+    samples = rng.integers(0, n_samples, size=(T, num_nodes))
+    loss_oracle = _make_loss_oracle(X, y, samples, alpha_reg)
 
-    # 4) Lipschitz constant and loss bound
-    L_f, C = _compute_logistic_constants(X_list, alpha_reg=alpha_reg, R=R)
+    max_abs_b = float(np.abs(y).max(initial=0.0))
+    L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
 
-    print("Lipschitz constant: ", L_f)
-    print("loss bound:", C)
-
-
-    # 5) choose BDOO "setting" and strong convexity parameter
-    if setting is None:
-        setting = "strongly_convex" if alpha_reg > 0 else "convex"
-
-    if setting == "strongly_convex":
-        if alpha_reg <= 0:
-            raise ValueError("alpha_reg must be > 0 for strongly_convex setting.")
-        alpha_sc = alpha_reg  # f(w) is alpha_reg-strongly convex
-    else:
-        alpha_sc = None
-
-    if graph_mode != "cycle":
-        raise ValueError("rho computation currently supports only the cycle graph mode.")
-
+    # Cycle graph connectivity and consensus parameter
     base_adj = _build_cycle_graph(num_nodes)
-    if a is None:
-        a = 1.0 / (1.0 + _compute_max_degree(base_adj))
-
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
     gossip_matrix = _build_gossip_matrix(base_adj, a)
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
     rho_value = float(eigenvalues_sorted[1])
 
-    # 6) run BDOO (Algorithm 2)
+    setting = "strongly_convex" if alpha_reg > 0 else "convex"
+
     X_hist, losses = run_algorithm2_bandit_paper_params(
         loss_oracle=loss_oracle,
         T=T,
         num_nodes=num_nodes,
-        dim=d,
+        dim=dim,
         R=R,
         r=r,
         L_f=L_f,
         C=C,
-        rho=rho_value if rho is None else rho,
-        alpha=alpha_sc,
+        rho=rho_value,
+        alpha=alpha_reg if setting == "strongly_convex" else None,
         setting=setting,
         a=a,
-        p_edge=p_edge,
-        graph_mode=graph_mode,
+        base_adj=base_adj,
+        graph_mode="cycle",
         rng=rng,
     )
 
-    # 7) global model = average over time and nodes
-    W_avg_nodes = X_hist.mean(axis=0)   # (N, d)
-    w_hat = W_avg_nodes.mean(axis=0)    # (d,)
+    # Global model: average across nodes and time
+    w_hat = X_hist.mean(axis=(0, 1))
 
-    # 8) training accuracy of w_hat
-    logits = X_scaled @ w_hat
-    y_pred_pm = np.where(logits >= 0.0, 1.0, -1.0)
-    y_true_pm = _prepare_binary_labels(y)
-    acc = float((y_pred_pm == y_true_pm).mean())
+    preds = X @ w_hat
+    mse = float(np.mean((preds - y) ** 2))
 
-    return w_hat, X_hist, losses, acc
+    return w_hat, X_hist, losses, mse
 
 
+def main() -> None:
+    dataset_path = Path("data/adv_setting/bodyfat")
+    X, y = _load_bodyfat_dataset(dataset_path)
 
-def load_dataset_from_conf():
-    """Load and preprocess dataset based on ``adv_setting/conf.ini`` settings."""
+    print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
 
-    conf_dict = conf_load()
-    data = conf_dict["data"]
-    target = conf_dict["target"]
-    is_minus_one = conf_dict["is_minus_one"]
+    # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
+    for alpha_reg in (0.0, 1.0):
+        w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
+            X,
+            y,
+            T=20000,
+            num_nodes=8,
+            R=10.0,
+            r=10.0,
+            alpha_reg=alpha_reg,
+            rng=np.random.default_rng(42),
+        )
 
-    X = torch.load(data, weights_only=False)
-    X = MaxAbsScaler().fit_transform(X)
-    X = preprocessing.normalize(X, norm="l2")
-
-    y = torch.load(target, weights_only=False)
-    y = np.array(y, dtype=int)
-    if is_minus_one:
-        # Transform labels from {-1, 1} to {0, 1} when needed.
-        y = (y + 1) / 2
-    y = np.array(y, dtype=int).reshape(-1)
-
-    return conf_dict, X, y
+        print("=" * 60)
+        print(f"alpha_reg = {alpha_reg}")
+        print(f"Final model shape: {w_hat.shape}")
+        print(f"Mean squared error: {mse:.6f}")
+        print(f"Loss history shape: {losses.shape}")
+        print("=" * 60)
 
 
-if __name__ == '__main__':
-    conf_dict, X_loaded, y_loaded = load_dataset_from_conf()
-
-    print(y_loaded.shape)
-
-    R = 10.0  # feasible region radius
-    r = R  # inner-ball radius (choose any 0 < r < R)
-    alpha_reg = 1e-3  # example; you’ll sweep {1e-1, ..., 1e-5}
-    T = 20000  # for KDDCup99, or 12500 for Diabetes
-
-    # w_hat, X_hist, losses, acc = run_bandit_logistic_regression(
-    #     X_loaded,
-    #     y_loaded,
-    #     T=T,
-    #     num_nodes=conf_dict.get("number_of_clients", 8),
-    #     R=R,
-    #     r=r,
-    #     alpha_reg=alpha_reg,
-    #     graph_mode="cycle",  # <<< BDOO: cycle network
-    #     rng=np.random.default_rng(42),
-    # )
-
-    w_hat, X_hist, losses, acc = run_bandit_logistic_regression(
-        X_loaded,
-        y_loaded,
-        T=T,
-        num_nodes=conf_dict.get("number_of_clients", 8),
-        R=R,
-        r=r,
-        alpha_reg=0.,
-        graph_mode="cycle",  # <<< BDOO: cycle network
-        rng=np.random.default_rng(42),
-    )
-
+if __name__ == "__main__":
+    main()
