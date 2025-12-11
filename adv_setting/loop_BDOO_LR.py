@@ -1,4 +1,4 @@
-"""BDOO experiments for linear regression on the bodyfat dataset.
+r"""BDOO experiments for linear regression on the bodyfat dataset.
 
 The script follows the implementation details provided in the paper notes:
 
@@ -186,7 +186,8 @@ def run_bdoo_linear_regression(
 
 
 def main() -> None:
-    dataset_path = Path("data/adv_setting/bodyfat")
+    repo_root = Path(__file__).resolve().parent.parent
+    dataset_path = repo_root / "data" / "adv_setting" / "bodyfat"
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
