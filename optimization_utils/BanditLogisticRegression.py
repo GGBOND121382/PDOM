@@ -223,6 +223,8 @@ def run_algorithm2_bandit_paper_params(
     if setting == "convex":
         c1 = 3.0 * d * R * C * (1.0 + 4.0 * rho * (1.0 + np.sqrt(N)) / (1.0 - rho))
         c2 = 2.0 * (L_f + C / r)
+        print("c1:", c1)
+        print("c2:", c2)
         delta = np.sqrt(c1 / c2) * (T ** (-0.25))
         xi = delta / r
 

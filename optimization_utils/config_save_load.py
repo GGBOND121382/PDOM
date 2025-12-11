@@ -22,8 +22,8 @@ def conf_load(filename='conf.ini'):
 
 
 if __name__ == '__main__':
-    data_source = 'diabetes'
-    # data_source = 'kddcup99'
+    # data_source = 'diabetes'
+    data_source = 'kddcup99'
 
     # num_of_clients, topology, A, mu = 64, 'cycle_64', two2six_cycle(), 64
     # num_of_clients, topology, A, mu = 64, 'cube_64', hyper_cube(6), 12

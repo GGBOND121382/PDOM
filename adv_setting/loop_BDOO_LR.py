@@ -96,6 +96,10 @@ def run_bandit_logistic_regression(
     # 4) Lipschitz constant and loss bound
     L_f, C = _compute_logistic_constants(X_list, alpha_reg=alpha_reg, R=R)
 
+    print("Lipschitz constant: ", L_f)
+    print("loss bound:", C)
+
+
     # 5) choose BDOO "setting" and strong convexity parameter
     if setting is None:
         setting = "strongly_convex" if alpha_reg > 0 else "convex"
@@ -177,10 +181,24 @@ def load_dataset_from_conf():
 if __name__ == '__main__':
     conf_dict, X_loaded, y_loaded = load_dataset_from_conf()
 
+    print(y_loaded.shape)
+
     R = 10.0  # feasible region radius
     r = R  # inner-ball radius (choose any 0 < r < R)
     alpha_reg = 1e-3  # example; you’ll sweep {1e-1, ..., 1e-5}
     T = 20000  # for KDDCup99, or 12500 for Diabetes
+
+    # w_hat, X_hist, losses, acc = run_bandit_logistic_regression(
+    #     X_loaded,
+    #     y_loaded,
+    #     T=T,
+    #     num_nodes=conf_dict.get("number_of_clients", 8),
+    #     R=R,
+    #     r=r,
+    #     alpha_reg=alpha_reg,
+    #     graph_mode="cycle",  # <<< BDOO: cycle network
+    #     rng=np.random.default_rng(42),
+    # )
 
     w_hat, X_hist, losses, acc = run_bandit_logistic_regression(
         X_loaded,
@@ -189,7 +207,7 @@ if __name__ == '__main__':
         num_nodes=conf_dict.get("number_of_clients", 8),
         R=R,
         r=r,
-        alpha_reg=alpha_reg,
+        alpha_reg=0.,
         graph_mode="cycle",  # <<< BDOO: cycle network
         rng=np.random.default_rng(42),
     )
