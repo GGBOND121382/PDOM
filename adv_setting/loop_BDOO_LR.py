@@ -19,7 +19,7 @@ resulting mean-squared error on the full dataset.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Tuple
+from typing import Callable, Dict, Iterable, Tuple
 
 import numpy as np
 from sklearn import preprocessing
@@ -101,6 +101,109 @@ def _compute_bounds(R: float, alpha_reg: float, max_abs_b: float) -> Tuple[float
     return lip, loss_bound
 
 
+def _compute_xi(
+    *,
+    setting: str,
+    T: int,
+    dim: int,
+    num_nodes: int,
+    R: float,
+    r: float,
+    L_f: float,
+    C: float,
+    rho: float,
+    alpha: float | None,
+) -> float:
+    """Compute ξ = δ / r for the provided hyperparameters.
+
+    This mirrors the formulas in ``run_algorithm2_bandit_paper_params`` to
+    validate whether a given pair ``(R, r)`` is admissible.
+    """
+
+    if setting == "convex":
+        c1 = 3.0 * dim * R * C * (1.0 + 4.0 * rho * (1.0 + np.sqrt(num_nodes)) / (1.0 - rho))
+        c2 = 2.0 * (L_f + C / r)
+        delta = np.sqrt(c1 / c2) * (T ** (-0.25))
+    elif setting == "strongly_convex":
+        if alpha is None or alpha <= 0:
+            raise ValueError("alpha must be positive for strongly convex settings")
+        c3 = (dim * (C**2) / (2.0 * alpha)) * (
+            1.0 + 6.0 * rho * (1.0 + np.sqrt(num_nodes)) / (1.0 - rho)
+        )
+        c2 = 2.0 * (L_f + C / r)
+        delta = ((2.0 * c3 * (1.0 + np.log(T))) / (c2 * T)) ** (1.0 / 3.0)
+    else:
+        raise ValueError("setting must be 'convex' or 'strongly_convex'")
+
+    return float(delta / r)
+
+
+def _select_radii_for_xi(
+    X: np.ndarray,
+    y: np.ndarray,
+    *,
+    T: int,
+    num_nodes: int,
+    alpha_values: Iterable[float] = (0.0, 1.0),
+    R_grid: Iterable[float] | None = None,
+    r_scales: Iterable[float] | None = None,
+) -> Tuple[Tuple[float, float], Dict[float, float]]:
+    """Find radii ``(R, r)`` such that ξ < 1 for all ``alpha_values``.
+
+    The search proceeds over a grid of candidate outer radii ``R`` and inner
+    radii ``r = scale * R``. The first feasible pair is returned alongside the
+    corresponding ``xi`` values keyed by ``alpha_reg``.
+    """
+
+    if R_grid is None:
+        R_grid = np.linspace(10.0, 1.0, num=19)  # 10.0, 9.5, ..., 1.0
+    if r_scales is None:
+        r_scales = (1.0, 0.75, 0.5)
+
+    max_abs_b = float(np.abs(y).max(initial=0.0))
+    dim = X.shape[1]
+
+    base_adj = _build_cycle_graph(num_nodes)
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    rho_value = float(eigenvalues_sorted[1])
+
+    for R in R_grid:
+        for scale in r_scales:
+            r = R * scale
+            feasible = True
+            xi_map: Dict[float, float] = {}
+            for alpha_reg in alpha_values:
+                setting = "strongly_convex" if alpha_reg > 0 else "convex"
+                L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
+                xi = _compute_xi(
+                    setting=setting,
+                    T=T,
+                    dim=dim,
+                    num_nodes=num_nodes,
+                    R=R,
+                    r=r,
+                    L_f=L_f,
+                    C=C,
+                    rho=rho_value,
+                    alpha=alpha_reg if setting == "strongly_convex" else None,
+                )
+                xi_map[alpha_reg] = xi
+                if xi >= 1.0:
+                    feasible = False
+                    break
+
+            if feasible:
+                return (float(R), float(r)), xi_map
+
+    raise ValueError(
+        "Unable to find radii R and r such that xi < 1 for all provided alpha_values. "
+        "Consider expanding the search grid."
+    )
+
+
 def run_bdoo_linear_regression(
     X: np.ndarray,
     y: np.ndarray,
@@ -148,9 +251,6 @@ def run_bdoo_linear_regression(
     max_abs_b = float(np.abs(y).max(initial=0.0))
     L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
 
-    print("Lips: ", L_f)
-    print("Loss bd: ", C)
-
     # Cycle graph connectivity and consensus parameter
     base_adj = _build_cycle_graph(num_nodes)
     a = 1.0 / (1.0 + _compute_max_degree(base_adj))
@@ -159,6 +259,8 @@ def run_bdoo_linear_regression(
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
     rho_value = float(eigenvalues_sorted[1])
     print("rho_value: ", rho_value)
+
+    setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
     setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
@@ -195,16 +297,22 @@ def main() -> None:
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
+    T = 2000
+    radii, xi_map = _select_radii_for_xi(X, y, T=T, num_nodes=8)
+    R, r = radii
+    print(f"Selected radii: R={R:.3f}, r={r:.3f}")
+    for alpha_reg, xi_val in xi_map.items():
+        print(f"  alpha_reg={alpha_reg}: xi={xi_val:.6f}")
 
     # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
     for alpha_reg in (0.0, 1.0):
         w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
             X,
             y,
-            T=400000,
+            T=T,
             num_nodes=8,
-            R=10.0,
-            r=10.0,
+            R=R,
+            r=r,
             alpha_reg=alpha_reg,
             rng=np.random.default_rng(42),
         )
