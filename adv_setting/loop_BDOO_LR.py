@@ -148,6 +148,9 @@ def run_bdoo_linear_regression(
     max_abs_b = float(np.abs(y).max(initial=0.0))
     L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
 
+    print("Lips: ", L_f)
+    print("Loss bd: ", C)
+
     # Cycle graph connectivity and consensus parameter
     base_adj = _build_cycle_graph(num_nodes)
     a = 1.0 / (1.0 + _compute_max_degree(base_adj))
@@ -155,6 +158,7 @@ def run_bdoo_linear_regression(
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
     rho_value = float(eigenvalues_sorted[1])
+    print("rho_value: ", rho_value)
 
     setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
@@ -197,7 +201,7 @@ def main() -> None:
         w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
             X,
             y,
-            T=20000,
+            T=400000,
             num_nodes=8,
             R=10.0,
             r=10.0,
