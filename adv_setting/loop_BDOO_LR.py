@@ -258,6 +258,9 @@ def run_bdoo_linear_regression(
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
     rho_value = float(eigenvalues_sorted[1])
+    print("rho_value: ", rho_value)
+
+    setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
     setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
