@@ -151,8 +151,10 @@ def _build_network_topology(
 
     a = 1.0 / (1.0 + _compute_max_degree(base_adj))
     gossip_matrix = _build_gossip_matrix(base_adj, a)
+    print("gossip_matrix: ", gossip_matrix)
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    print("eigenvalues_sorted: ", eigenvalues_sorted)
     rho_value = float(eigenvalues_sorted[1])
 
     return base_adj, gossip_matrix, rho_value, a
@@ -229,6 +231,7 @@ def _select_radii_for_xi(
     base_adj, _, rho_value, _ = _build_network_topology(network_topology, num_nodes)
 
     print("rho_value: ", rho_value)
+    print("base_adj: ", base_adj)
 
     for R in R_grid:
         # for scale in r_scales:
@@ -355,8 +358,8 @@ def main() -> None:
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
     T = 200000
-    network_topology = "cycle"  # set to "grid3x3" for a 9-node grid network
-    # network_topology = "grid3x3"  # set to "grid3x3" for a 9-node grid network
+    # network_topology = "cycle"  # set to "grid3x3" for a 9-node grid network
+    network_topology = "grid3x3"  # set to "grid3x3" for a 9-node grid network
     num_nodes = 9 if network_topology == "grid3x3" else 8
 
     radii, xi_map = _select_radii_for_xi(
