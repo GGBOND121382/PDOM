@@ -8,7 +8,8 @@ The script follows the implementation details provided in the paper notes:
   each sample is normalized to unit `\ell_2` length.
 * Task: distributed online (regularized) linear regression with squared loss
   and optional L2 regularization over an `\ell_2` ball of radius 10.
-* Network: default 8-node cycle graph (each node has two neighbors).
+* Network: default 8-node cycle graph (each node has two neighbors) with an
+  optional 9-node 3×3 grid topology.
 * Time horizon: by default 20,000 rounds.
 
 The implementation samples data uniformly with replacement for each node and
@@ -101,6 +102,62 @@ def _compute_bounds(R: float, alpha_reg: float, max_abs_b: float) -> Tuple[float
     return lip, loss_bound
 
 
+def _build_grid3x3_graph(num_nodes: int) -> np.ndarray:
+    """Return the adjacency for a 3×3 grid network (9 nodes).
+
+    Nodes are labeled row-wise from 0 to 8. Connectivity is 4-neighbor where
+    applicable (up, down, left, right), without self-loops.
+    """
+
+    if num_nodes != 9:
+        raise ValueError("3x3 grid topology requires exactly 9 nodes.")
+
+    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
+    rows, cols = 3, 3
+    for r in range(rows):
+        for c in range(cols):
+            idx = r * cols + c
+            if r > 0:
+                up = (r - 1) * cols + c
+                adj[idx, up] = True
+                adj[up, idx] = True
+            if r < rows - 1:
+                down = (r + 1) * cols + c
+                adj[idx, down] = True
+                adj[down, idx] = True
+            if c > 0:
+                left = r * cols + (c - 1)
+                adj[idx, left] = True
+                adj[left, idx] = True
+            if c < cols - 1:
+                right = r * cols + (c + 1)
+                adj[idx, right] = True
+                adj[right, idx] = True
+
+    return adj
+
+
+def _build_network_topology(
+    topology: str, num_nodes: int
+) -> Tuple[np.ndarray, np.ndarray, float, float]:
+    """Construct adjacency, gossip matrix, degree-weight, and ρ for a topology."""
+
+    if topology == "cycle":
+        base_adj = _build_cycle_graph(num_nodes)
+    elif topology in {"grid", "grid3x3"}:
+        base_adj = _build_grid3x3_graph(num_nodes)
+    else:
+        raise ValueError("Unsupported topology. Use 'cycle' or 'grid3x3'.")
+
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    rho_value = float(eigenvalues_sorted[1])
+
+    return base_adj, gossip_matrix, rho_value, a
+
+
 def _compute_xi(
     *,
     setting: str,
@@ -147,12 +204,18 @@ def _select_radii_for_xi(
     alpha_values: Iterable[float] = (0.0, 1.0),
     R_grid: Iterable[float] | None = None,
     r_scales: Iterable[float] | None = None,
+    network_topology: str = "cycle",
 ) -> Tuple[Tuple[float, float], Dict[float, float]]:
     """Find radii ``(R, r)`` such that ξ < 1 for all ``alpha_values``.
 
     The search proceeds over a grid of candidate outer radii ``R`` and inner
     radii ``r = scale * R``. The first feasible pair is returned alongside the
     corresponding ``xi`` values keyed by ``alpha_reg``.
+
+    Parameters
+    ----------
+    network_topology : {"cycle", "grid3x3"}
+        Graph structure used to compute the connectivity term ``ρ``.
     """
 
     if R_grid is None:
@@ -163,12 +226,7 @@ def _select_radii_for_xi(
     max_abs_b = float(np.abs(y).max(initial=0.0))
     dim = X.shape[1]
 
-    base_adj = _build_cycle_graph(num_nodes)
-    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
-    gossip_matrix = _build_gossip_matrix(base_adj, a)
-    eigenvalues = np.linalg.eigvals(gossip_matrix)
-    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
-    rho_value = float(eigenvalues_sorted[1])
+    base_adj, _, rho_value, _ = _build_network_topology(network_topology, num_nodes)
 
     for R in R_grid:
         for scale in r_scales:
@@ -213,6 +271,7 @@ def run_bdoo_linear_regression(
     R: float = 10.0,
     r: float | None = None,
     alpha_reg: float = 0.0,
+    network_topology: str = "cycle",
     rng: np.random.Generator | None = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """Apply BDOO (Algorithm 2) to the linear regression task.
@@ -224,7 +283,7 @@ def run_bdoo_linear_regression(
     T : int
         Time horizon (number of rounds).
     num_nodes : int
-        Number of learners in the cycle network.
+        Number of learners in the communication network.
     R : float
         Radius of the feasible `\ell_2` ball.
     r : float, optional
@@ -232,6 +291,9 @@ def run_bdoo_linear_regression(
     alpha_reg : float
         L2 regularization coefficient (0 for convex, 1 for strongly convex
         experiments as described in the implementation details).
+    network_topology : {"cycle", "grid3x3"}
+        Communication graph used by the learners. The 3×3 grid option requires
+        ``num_nodes == 9``.
     rng : np.random.Generator, optional
         Random generator for reproducibility.
     """
@@ -251,16 +313,8 @@ def run_bdoo_linear_regression(
     max_abs_b = float(np.abs(y).max(initial=0.0))
     L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
 
-    # Cycle graph connectivity and consensus parameter
-    base_adj = _build_cycle_graph(num_nodes)
-    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
-    gossip_matrix = _build_gossip_matrix(base_adj, a)
-    eigenvalues = np.linalg.eigvals(gossip_matrix)
-    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
-    rho_value = float(eigenvalues_sorted[1])
-    print("rho_value: ", rho_value)
-
-    setting = "strongly_convex" if alpha_reg > 0 else "convex"
+    # Graph connectivity and consensus parameter
+    base_adj, _, rho_value, a = _build_network_topology(network_topology, num_nodes)
 
     setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
@@ -298,7 +352,16 @@ def main() -> None:
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
     T = 2000
-    radii, xi_map = _select_radii_for_xi(X, y, T=T, num_nodes=8)
+    network_topology = "cycle"  # set to "grid3x3" for a 9-node grid network
+    num_nodes = 9 if network_topology == "grid3x3" else 8
+
+    radii, xi_map = _select_radii_for_xi(
+        X,
+        y,
+        T=T,
+        num_nodes=num_nodes,
+        network_topology=network_topology,
+    )
     R, r = radii
     print(f"Selected radii: R={R:.3f}, r={r:.3f}")
     for alpha_reg, xi_val in xi_map.items():
@@ -310,10 +373,11 @@ def main() -> None:
             X,
             y,
             T=T,
-            num_nodes=8,
+            num_nodes=num_nodes,
             R=R,
             r=r,
             alpha_reg=alpha_reg,
+            network_topology=network_topology,
             rng=np.random.default_rng(42),
         )
 
