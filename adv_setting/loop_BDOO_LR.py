@@ -220,41 +220,44 @@ def _select_radii_for_xi(
 
     if R_grid is None:
         R_grid = np.linspace(10.0, 1.0, num=19)  # 10.0, 9.5, ..., 1.0
-    if r_scales is None:
-        r_scales = (1.0, 0.75, 0.5)
+    # if r_scales is None:
+    #     r_scales = (1.0, 0.75, 0.5)
 
     max_abs_b = float(np.abs(y).max(initial=0.0))
     dim = X.shape[1]
 
     base_adj, _, rho_value, _ = _build_network_topology(network_topology, num_nodes)
 
-    for R in R_grid:
-        for scale in r_scales:
-            r = R * scale
-            feasible = True
-            xi_map: Dict[float, float] = {}
-            for alpha_reg in alpha_values:
-                setting = "strongly_convex" if alpha_reg > 0 else "convex"
-                L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
-                xi = _compute_xi(
-                    setting=setting,
-                    T=T,
-                    dim=dim,
-                    num_nodes=num_nodes,
-                    R=R,
-                    r=r,
-                    L_f=L_f,
-                    C=C,
-                    rho=rho_value,
-                    alpha=alpha_reg if setting == "strongly_convex" else None,
-                )
-                xi_map[alpha_reg] = xi
-                if xi >= 1.0:
-                    feasible = False
-                    break
+    print("rho_value: ", rho_value)
 
-            if feasible:
-                return (float(R), float(r)), xi_map
+    for R in R_grid:
+        # for scale in r_scales:
+        scale = 1.
+        r = R * scale
+        feasible = True
+        xi_map: Dict[float, float] = {}
+        for alpha_reg in alpha_values:
+            setting = "strongly_convex" if alpha_reg > 0 else "convex"
+            L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
+            xi = _compute_xi(
+                setting=setting,
+                T=T,
+                dim=dim,
+                num_nodes=num_nodes,
+                R=R,
+                r=r,
+                L_f=L_f,
+                C=C,
+                rho=rho_value,
+                alpha=alpha_reg if setting == "strongly_convex" else None,
+            )
+            xi_map[alpha_reg] = xi
+            if xi >= 1.0:
+                feasible = False
+                break
+
+        if feasible:
+            return (float(R), float(r)), xi_map
 
     raise ValueError(
         "Unable to find radii R and r such that xi < 1 for all provided alpha_values. "
@@ -351,8 +354,9 @@ def main() -> None:
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
-    T = 2000
+    T = 200000
     network_topology = "cycle"  # set to "grid3x3" for a 9-node grid network
+    # network_topology = "grid3x3"  # set to "grid3x3" for a 9-node grid network
     num_nodes = 9 if network_topology == "grid3x3" else 8
 
     radii, xi_map = _select_radii_for_xi(
@@ -367,26 +371,26 @@ def main() -> None:
     for alpha_reg, xi_val in xi_map.items():
         print(f"  alpha_reg={alpha_reg}: xi={xi_val:.6f}")
 
-    # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
-    for alpha_reg in (0.0, 1.0):
-        w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
-            X,
-            y,
-            T=T,
-            num_nodes=num_nodes,
-            R=R,
-            r=r,
-            alpha_reg=alpha_reg,
-            network_topology=network_topology,
-            rng=np.random.default_rng(42),
-        )
-
-        print("=" * 60)
-        print(f"alpha_reg = {alpha_reg}")
-        print(f"Final model shape: {w_hat.shape}")
-        print(f"Mean squared error: {mse:.6f}")
-        print(f"Loss history shape: {losses.shape}")
-        print("=" * 60)
+    # # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
+    # for alpha_reg in (0.0, 1.0):
+    #     w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
+    #         X,
+    #         y,
+    #         T=T,
+    #         num_nodes=num_nodes,
+    #         R=R,
+    #         r=r,
+    #         alpha_reg=alpha_reg,
+    #         network_topology=network_topology,
+    #         rng=np.random.default_rng(42),
+    #     )
+    #
+    #     print("=" * 60)
+    #     print(f"alpha_reg = {alpha_reg}")
+    #     print(f"Final model shape: {w_hat.shape}")
+    #     print(f"Mean squared error: {mse:.6f}")
+    #     print(f"Loss history shape: {losses.shape}")
+    #     print("=" * 60)
 
 
 if __name__ == "__main__":
