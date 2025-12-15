@@ -185,6 +185,15 @@ def _build_network_topology(
     gossip_matrix = _build_gossip_matrix(base_adj, a)
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    else:
+        raise ValueError("Unsupported topology. Use 'cycle' or 'grid3x3'.")
+
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    print("gossip_matrix: ", gossip_matrix)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    print("eigenvalues_sorted: ", eigenvalues_sorted)
     rho_value = float(eigenvalues_sorted[1])
 
     return base_adj, gossip_matrix, rho_value, a
@@ -287,6 +296,37 @@ def _select_radii_for_xi(
 
             if feasible:
                 return (float(R), float(r)), xi_map
+    print("rho_value: ", rho_value)
+    print("base_adj: ", base_adj)
+
+    for R in R_grid:
+        # for scale in r_scales:
+        scale = 1.
+        r = R * scale
+        feasible = True
+        xi_map: Dict[float, float] = {}
+        for alpha_reg in alpha_values:
+            setting = "strongly_convex" if alpha_reg > 0 else "convex"
+            L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
+            xi = _compute_xi(
+                setting=setting,
+                T=T,
+                dim=dim,
+                num_nodes=num_nodes,
+                R=R,
+                r=r,
+                L_f=L_f,
+                C=C,
+                rho=rho_value,
+                alpha=alpha_reg if setting == "strongly_convex" else None,
+            )
+            xi_map[alpha_reg] = xi
+            if xi >= 1.0:
+                feasible = False
+                break
+
+        if feasible:
+            return (float(R), float(r)), xi_map
 
     raise ValueError(
         "Unable to find radii R and r such that xi < 1 for all provided alpha_values. "
