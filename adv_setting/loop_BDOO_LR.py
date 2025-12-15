@@ -8,8 +8,8 @@ The script follows the implementation details provided in the paper notes:
   each sample is normalized to unit `\ell_2` length.
 * Task: distributed online (regularized) linear regression with squared loss
   and optional L2 regularization over an `\ell_2` ball of radius 10.
-* Network: default 8-node cycle graph (each node has two neighbors) with an
-  optional 9-node 3×3 grid topology.
+* Network: default 8-node cycle graph (each node has two neighbors) with
+  optional 9-node 3×3 grid and 8-node cube topologies.
 * Time horizon: by default 20,000 rounds.
 
 The implementation samples data uniformly with replacement for each node and
@@ -137,6 +137,36 @@ def _build_grid3x3_graph(num_nodes: int) -> np.ndarray:
     return adj
 
 
+def _build_cube_graph(num_nodes: int) -> np.ndarray:
+    """Return the adjacency for an 8-node cube (3-regular) network."""
+
+    if num_nodes != 8:
+        raise ValueError("Cube topology requires exactly 8 nodes.")
+
+    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
+
+    edges = (
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
+    )
+
+    for i, j in edges:
+        adj[i, j] = True
+        adj[j, i] = True
+
+    return adj
+
+
 def _build_network_topology(
     topology: str, num_nodes: int
 ) -> Tuple[np.ndarray, np.ndarray, float, float]:
@@ -146,6 +176,15 @@ def _build_network_topology(
         base_adj = _build_cycle_graph(num_nodes)
     elif topology in {"grid", "grid3x3"}:
         base_adj = _build_grid3x3_graph(num_nodes)
+    elif topology in {"cube", "hypercube"}:
+        base_adj = _build_cube_graph(num_nodes)
+    else:
+        raise ValueError("Unsupported topology. Use 'cycle', 'grid3x3', or 'cube'.")
+
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
     else:
         raise ValueError("Unsupported topology. Use 'cycle' or 'grid3x3'.")
 
@@ -216,20 +255,47 @@ def _select_radii_for_xi(
 
     Parameters
     ----------
-    network_topology : {"cycle", "grid3x3"}
+    network_topology : {"cycle", "grid3x3", "cube"}
         Graph structure used to compute the connectivity term ``ρ``.
     """
 
     if R_grid is None:
         R_grid = np.linspace(10.0, 1.0, num=19)  # 10.0, 9.5, ..., 1.0
-    # if r_scales is None:
-    #     r_scales = (1.0, 0.75, 0.5)
+    if r_scales is None:
+        r_scales = (1.0, 0.75, 0.5)
 
     max_abs_b = float(np.abs(y).max(initial=0.0))
     dim = X.shape[1]
 
     base_adj, _, rho_value, _ = _build_network_topology(network_topology, num_nodes)
 
+    for R in R_grid:
+        for scale in r_scales:
+            r = R * scale
+            feasible = True
+            xi_map: Dict[float, float] = {}
+            for alpha_reg in alpha_values:
+                setting = "strongly_convex" if alpha_reg > 0 else "convex"
+                L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
+                xi = _compute_xi(
+                    setting=setting,
+                    T=T,
+                    dim=dim,
+                    num_nodes=num_nodes,
+                    R=R,
+                    r=r,
+                    L_f=L_f,
+                    C=C,
+                    rho=rho_value,
+                    alpha=alpha_reg if setting == "strongly_convex" else None,
+                )
+                xi_map[alpha_reg] = xi
+                if xi >= 1.0:
+                    feasible = False
+                    break
+
+            if feasible:
+                return (float(R), float(r)), xi_map
     print("rho_value: ", rho_value)
     print("base_adj: ", base_adj)
 
@@ -297,9 +363,9 @@ def run_bdoo_linear_regression(
     alpha_reg : float
         L2 regularization coefficient (0 for convex, 1 for strongly convex
         experiments as described in the implementation details).
-    network_topology : {"cycle", "grid3x3"}
+    network_topology : {"cycle", "grid3x3", "cube"}
         Communication graph used by the learners. The 3×3 grid option requires
-        ``num_nodes == 9``.
+        ``num_nodes == 9`` while the cube requires ``num_nodes == 8``.
     rng : np.random.Generator, optional
         Random generator for reproducibility.
     """
@@ -357,9 +423,8 @@ def main() -> None:
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
-    T = 200000
-    # network_topology = "cycle"  # set to "grid3x3" for a 9-node grid network
-    network_topology = "grid3x3"  # set to "grid3x3" for a 9-node grid network
+    T = 2000
+    network_topology = "cycle"  # set to "grid3x3" for a 9-node grid or "cube" for the 8-node cube
     num_nodes = 9 if network_topology == "grid3x3" else 8
 
     radii, xi_map = _select_radii_for_xi(
@@ -374,26 +439,26 @@ def main() -> None:
     for alpha_reg, xi_val in xi_map.items():
         print(f"  alpha_reg={alpha_reg}: xi={xi_val:.6f}")
 
-    # # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
-    # for alpha_reg in (0.0, 1.0):
-    #     w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
-    #         X,
-    #         y,
-    #         T=T,
-    #         num_nodes=num_nodes,
-    #         R=R,
-    #         r=r,
-    #         alpha_reg=alpha_reg,
-    #         network_topology=network_topology,
-    #         rng=np.random.default_rng(42),
-    #     )
-    #
-    #     print("=" * 60)
-    #     print(f"alpha_reg = {alpha_reg}")
-    #     print(f"Final model shape: {w_hat.shape}")
-    #     print(f"Mean squared error: {mse:.6f}")
-    #     print(f"Loss history shape: {losses.shape}")
-    #     print("=" * 60)
+    # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
+    for alpha_reg in (0.0, 1.0):
+        w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
+            X,
+            y,
+            T=T,
+            num_nodes=num_nodes,
+            R=R,
+            r=r,
+            alpha_reg=alpha_reg,
+            network_topology=network_topology,
+            rng=np.random.default_rng(42),
+        )
+
+        print("=" * 60)
+        print(f"alpha_reg = {alpha_reg}")
+        print(f"Final model shape: {w_hat.shape}")
+        print(f"Mean squared error: {mse:.6f}")
+        print(f"Loss history shape: {losses.shape}")
+        print("=" * 60)
 
 
 if __name__ == "__main__":
