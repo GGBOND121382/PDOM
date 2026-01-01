@@ -183,13 +183,6 @@ def _build_network_topology(
 
     a = 1.0 / (1.0 + _compute_max_degree(base_adj))
     gossip_matrix = _build_gossip_matrix(base_adj, a)
-    eigenvalues = np.linalg.eigvals(gossip_matrix)
-    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
-    else:
-        raise ValueError("Unsupported topology. Use 'cycle' or 'grid3x3'.")
-
-    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
-    gossip_matrix = _build_gossip_matrix(base_adj, a)
     print("gossip_matrix: ", gossip_matrix)
     eigenvalues = np.linalg.eigvals(gossip_matrix)
     eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
@@ -221,6 +214,8 @@ def _compute_xi(
     if setting == "convex":
         c1 = 3.0 * dim * R * C * (1.0 + 4.0 * rho * (1.0 + np.sqrt(num_nodes)) / (1.0 - rho))
         c2 = 2.0 * (L_f + C / r)
+        print("c1: ", c1)
+        print("c2: ", c2)
         delta = np.sqrt(c1 / c2) * (T ** (-0.25))
     elif setting == "strongly_convex":
         if alpha is None or alpha <= 0:
@@ -229,6 +224,8 @@ def _compute_xi(
             1.0 + 6.0 * rho * (1.0 + np.sqrt(num_nodes)) / (1.0 - rho)
         )
         c2 = 2.0 * (L_f + C / r)
+        print("c3: ", c3)
+        print("c2: ", c2)
         delta = ((2.0 * c3 * (1.0 + np.log(T))) / (c2 * T)) ** (1.0 / 3.0)
     else:
         raise ValueError("setting must be 'convex' or 'strongly_convex'")
@@ -268,34 +265,6 @@ def _select_radii_for_xi(
     dim = X.shape[1]
 
     base_adj, _, rho_value, _ = _build_network_topology(network_topology, num_nodes)
-
-    for R in R_grid:
-        for scale in r_scales:
-            r = R * scale
-            feasible = True
-            xi_map: Dict[float, float] = {}
-            for alpha_reg in alpha_values:
-                setting = "strongly_convex" if alpha_reg > 0 else "convex"
-                L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
-                xi = _compute_xi(
-                    setting=setting,
-                    T=T,
-                    dim=dim,
-                    num_nodes=num_nodes,
-                    R=R,
-                    r=r,
-                    L_f=L_f,
-                    C=C,
-                    rho=rho_value,
-                    alpha=alpha_reg if setting == "strongly_convex" else None,
-                )
-                xi_map[alpha_reg] = xi
-                if xi >= 1.0:
-                    feasible = False
-                    break
-
-            if feasible:
-                return (float(R), float(r)), xi_map
     print("rho_value: ", rho_value)
     print("base_adj: ", base_adj)
 
@@ -308,6 +277,11 @@ def _select_radii_for_xi(
         for alpha_reg in alpha_values:
             setting = "strongly_convex" if alpha_reg > 0 else "convex"
             L_f, C = _compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b)
+            print("R: ", R)
+            print("alpha: ", alpha_reg)
+            print("max_abs_b: ", max_abs_b)
+            print("L_f: ", L_f)
+            print("C: ", C)
             xi = _compute_xi(
                 setting=setting,
                 T=T,
@@ -326,6 +300,7 @@ def _select_radii_for_xi(
                 break
 
         if feasible:
+            # print((float(R), float(r)), xi_map)
             return (float(R), float(r)), xi_map
 
     raise ValueError(
@@ -423,8 +398,8 @@ def main() -> None:
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
-    T = 2000
-    network_topology = "cycle"  # set to "grid3x3" for a 9-node grid or "cube" for the 8-node cube
+    T = 100000
+    network_topology = "cube"  # set to "grid3x3" for a 9-node grid or "cube" for the 8-node cube
     num_nodes = 9 if network_topology == "grid3x3" else 8
 
     radii, xi_map = _select_radii_for_xi(
