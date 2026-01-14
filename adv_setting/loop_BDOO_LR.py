@@ -12,185 +12,38 @@ The script follows the implementation details provided in the paper notes:
   optional 9-node 3×3 grid and 8-node cube topologies.
 * Time horizon: by default 20,000 rounds.
 
-The implementation samples data uniformly with replacement for each node and
-time, computes the Lipschitz and loss bounds used by BDOO, and reports the
-resulting mean-squared error on the full dataset.
+This version additionally computes:
+  - Average loss per round (averaged over learners and normalized by T)
+  - Average regret per round (normalized by T), where the comparator is the
+    best fixed x in ||x||_2 <= R minimizing the same cumulative loss.
+
+Loss definition (per learner i, round t):
+    f_t^i(x) = (a_{i,t}^T x - b_{i,t})^2 + (alpha/2) ||x||^2
 """
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Dict, Iterable, Tuple
+from typing import Dict, Iterable, Tuple
 
 import numpy as np
-from sklearn import preprocessing
-from sklearn.datasets import load_svmlight_file
-from sklearn.preprocessing import MaxAbsScaler
 
 from optimization_utils.BanditLogisticRegression import (
-    _build_cycle_graph,
-    _build_gossip_matrix,
-    _compute_max_degree,
+    _build_network_topology,
+    _compute_bounds,
+    _load_bodyfat_dataset,
+    _make_loss_oracle,
     run_algorithm2_bandit_paper_params,
 )
+from optimization_utils.adv_setting_utils import compute_avg_loss_and_avg_regret_per_round
 
 
-def _load_bodyfat_dataset(dataset_path: Path | str) -> Tuple[np.ndarray, np.ndarray]:
-    """Load and preprocess the bodyfat dataset.
-
-    Parameters
-    ----------
-    dataset_path : Path or str
-        Path to the LIBSVM formatted bodyfat dataset file.
-
-    Returns
-    -------
-    X : np.ndarray, shape (n_samples, 14)
-        Scaled features with per-feature MaxAbs scaling to [-1, 1] and
-        per-sample `\ell_2` normalization.
-    y : np.ndarray, shape (n_samples,)
-        Target values as a dense array.
-    """
-
-    X_sparse, y = load_svmlight_file(str(dataset_path))
-    X = X_sparse.toarray()
-
-    X = MaxAbsScaler().fit_transform(X)
-    X = preprocessing.normalize(X, norm="l2")
-
-    return X.astype(float), y.astype(float)
+# Regret/comparator helpers are imported from optimization_utils.adv_setting_utils.
 
 
-def _make_loss_oracle(
-    X: np.ndarray,
-    y: np.ndarray,
-    samples: np.ndarray,
-    alpha_reg: float,
-) -> Callable[[int, int, np.ndarray], float]:
-    """Create the loss oracle f(i, t, x) used by BDOO.
-
-    The oracle samples data points according to ``samples`` and evaluates the
-    (regularized) squared loss at the provided query point ``x``.
-    """
-
-    def oracle(i: int, t: int, x: np.ndarray) -> float:
-        idx = samples[t - 1, i]
-        a_i = X[idx]
-        b_i = y[idx]
-        residual = float(np.dot(a_i, x) - b_i)
-        loss = residual * residual
-        if alpha_reg:
-            loss += 0.5 * alpha_reg * float(np.dot(x, x))
-        return loss
-
-    return oracle
-
-
-def _compute_bounds(R: float, alpha_reg: float, max_abs_b: float) -> Tuple[float, float]:
-    """Compute Lipschitz (L_f) and loss bound (C) for squared loss.
-
-    With ``||a||_2 <= 1`` and ``||x||_2 <= R``:
-
-    * |a^T x| <= R
-    * |(a^T x - b)| <= R + |b|
-    * ||grad|| <= 2 (R + |b|) + alpha_reg * R
-    * f(x) <= (R + |b|)^2 + 0.5 * alpha_reg * R^2
-    """
-
-    lip = 2.0 * (R + max_abs_b) + alpha_reg * R
-    loss_bound = (R + max_abs_b) ** 2 + 0.5 * alpha_reg * (R**2)
-    return lip, loss_bound
-
-
-def _build_grid3x3_graph(num_nodes: int) -> np.ndarray:
-    """Return the adjacency for a 3×3 grid network (9 nodes).
-
-    Nodes are labeled row-wise from 0 to 8. Connectivity is 4-neighbor where
-    applicable (up, down, left, right), without self-loops.
-    """
-
-    if num_nodes != 9:
-        raise ValueError("3x3 grid topology requires exactly 9 nodes.")
-
-    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
-    rows, cols = 3, 3
-    for r in range(rows):
-        for c in range(cols):
-            idx = r * cols + c
-            if r > 0:
-                up = (r - 1) * cols + c
-                adj[idx, up] = True
-                adj[up, idx] = True
-            if r < rows - 1:
-                down = (r + 1) * cols + c
-                adj[idx, down] = True
-                adj[down, idx] = True
-            if c > 0:
-                left = r * cols + (c - 1)
-                adj[idx, left] = True
-                adj[left, idx] = True
-            if c < cols - 1:
-                right = r * cols + (c + 1)
-                adj[idx, right] = True
-                adj[right, idx] = True
-
-    return adj
-
-
-def _build_cube_graph(num_nodes: int) -> np.ndarray:
-    """Return the adjacency for an 8-node cube (3-regular) network."""
-
-    if num_nodes != 8:
-        raise ValueError("Cube topology requires exactly 8 nodes.")
-
-    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
-
-    edges = (
-        (0, 1),
-        (1, 2),
-        (2, 3),
-        (3, 0),
-        (4, 5),
-        (5, 6),
-        (6, 7),
-        (7, 4),
-        (0, 4),
-        (1, 5),
-        (2, 6),
-        (3, 7),
-    )
-
-    for i, j in edges:
-        adj[i, j] = True
-        adj[j, i] = True
-
-    return adj
-
-
-def _build_network_topology(
-    topology: str, num_nodes: int
-) -> Tuple[np.ndarray, np.ndarray, float, float]:
-    """Construct adjacency, gossip matrix, degree-weight, and ρ for a topology."""
-
-    if topology == "cycle":
-        base_adj = _build_cycle_graph(num_nodes)
-    elif topology in {"grid", "grid3x3"}:
-        base_adj = _build_grid3x3_graph(num_nodes)
-    elif topology in {"cube", "hypercube"}:
-        base_adj = _build_cube_graph(num_nodes)
-    else:
-        raise ValueError("Unsupported topology. Use 'cycle', 'grid3x3', or 'cube'.")
-
-    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
-    gossip_matrix = _build_gossip_matrix(base_adj, a)
-    print("gossip_matrix: ", gossip_matrix)
-    eigenvalues = np.linalg.eigvals(gossip_matrix)
-    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
-    print("eigenvalues_sorted: ", eigenvalues_sorted)
-    rho_value = float(eigenvalues_sorted[1])
-
-    return base_adj, gossip_matrix, rho_value, a
-
+# ============================================================
+# xi / radii selection (unchanged)
+# ============================================================
 
 def _compute_xi(
     *,
@@ -210,7 +63,6 @@ def _compute_xi(
     This mirrors the formulas in ``run_algorithm2_bandit_paper_params`` to
     validate whether a given pair ``(R, r)`` is admissible.
     """
-
     if setting == "convex":
         c1 = 3.0 * dim * R * C * (1.0 + 4.0 * rho * (1.0 + np.sqrt(num_nodes)) / (1.0 - rho))
         c2 = 2.0 * (L_f + C / r)
@@ -244,18 +96,7 @@ def _select_radii_for_xi(
     r_scales: Iterable[float] | None = None,
     network_topology: str = "cycle",
 ) -> Tuple[Tuple[float, float], Dict[float, float]]:
-    """Find radii ``(R, r)`` such that ξ < 1 for all ``alpha_values``.
-
-    The search proceeds over a grid of candidate outer radii ``R`` and inner
-    radii ``r = scale * R``. The first feasible pair is returned alongside the
-    corresponding ``xi`` values keyed by ``alpha_reg``.
-
-    Parameters
-    ----------
-    network_topology : {"cycle", "grid3x3", "cube"}
-        Graph structure used to compute the connectivity term ``ρ``.
-    """
-
+    """Find radii ``(R, r)`` such that ξ < 1 for all ``alpha_values``."""
     if R_grid is None:
         R_grid = np.linspace(10.0, 1.0, num=19)  # 10.0, 9.5, ..., 1.0
     if r_scales is None:
@@ -270,7 +111,7 @@ def _select_radii_for_xi(
 
     for R in R_grid:
         # for scale in r_scales:
-        scale = 1.
+        scale = 1.0
         r = R * scale
         feasible = True
         xi_map: Dict[float, float] = {}
@@ -300,7 +141,6 @@ def _select_radii_for_xi(
                 break
 
         if feasible:
-            # print((float(R), float(r)), xi_map)
             return (float(R), float(r)), xi_map
 
     raise ValueError(
@@ -308,6 +148,10 @@ def _select_radii_for_xi(
         "Consider expanding the search grid."
     )
 
+
+# ============================================================
+# Main experiment
+# ============================================================
 
 def run_bdoo_linear_regression(
     X: np.ndarray,
@@ -320,31 +164,24 @@ def run_bdoo_linear_regression(
     alpha_reg: float = 0.0,
     network_topology: str = "cycle",
     rng: np.random.Generator | None = None,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, float, float]:
     """Apply BDOO (Algorithm 2) to the linear regression task.
 
-    Parameters
-    ----------
-    X, y : array-like
-        Preprocessed dataset.
-    T : int
-        Time horizon (number of rounds).
-    num_nodes : int
-        Number of learners in the communication network.
-    R : float
-        Radius of the feasible `\ell_2` ball.
-    r : float, optional
-        Inner ball radius. Defaults to ``R`` when not provided.
-    alpha_reg : float
-        L2 regularization coefficient (0 for convex, 1 for strongly convex
-        experiments as described in the implementation details).
-    network_topology : {"cycle", "grid3x3", "cube"}
-        Communication graph used by the learners. The 3×3 grid option requires
-        ``num_nodes == 9`` while the cube requires ``num_nodes == 8``.
-    rng : np.random.Generator, optional
-        Random generator for reproducibility.
+    Returns
+    -------
+    w_hat : (d,)
+        Global model (average across nodes and time).
+    X_hist : (T, n, d)
+        Model history.
+    losses : array-like
+        Losses returned by ``run_algorithm2_bandit_paper_params`` (as-is).
+    mse : float
+        MSE on the full dataset using w_hat (no reg term in MSE).
+    avg_loss_per_round : float
+        (1/T) Σ_t (1/n) Σ_i f_t^i(x_{i,t}) using your specified loss.
+    avg_regret_per_round : float
+        Average regret normalized by T against best fixed x in ||x||<=R.
     """
-
     if rng is None:
         rng = np.random.default_rng()
 
@@ -383,13 +220,24 @@ def run_bdoo_linear_regression(
         rng=rng,
     )
 
+    # Compute average loss per round and average regret per round (normalized by T)
+    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
+        X_hist=X_hist,
+        samples=samples,
+        X=X,
+        y=y,
+        alpha_reg=alpha_reg,
+        R=R,
+        use_pre_update_iterate=False,
+    )
+
     # Global model: average across nodes and time
     w_hat = X_hist.mean(axis=(0, 1))
 
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
-    return w_hat, X_hist, losses, mse
+    return w_hat, X_hist, losses, mse, avg_loss_per_round, avg_regret_per_round
 
 
 def main() -> None:
@@ -398,25 +246,29 @@ def main() -> None:
     X, y = _load_bodyfat_dataset(dataset_path)
 
     print(f"Loaded bodyfat dataset: {X.shape[0]} samples, {X.shape[1]} features")
+
     T = 100000
-    network_topology = "cube"  # set to "grid3x3" for a 9-node grid or "cube" for the 8-node cube
+    network_topology = "grid3x3"  # "grid3x3" (num_nodes=9) or "cube" (num_nodes=8) or "cycle"
     num_nodes = 9 if network_topology == "grid3x3" else 8
 
-    radii, xi_map = _select_radii_for_xi(
-        X,
-        y,
-        T=T,
-        num_nodes=num_nodes,
-        network_topology=network_topology,
-    )
-    R, r = radii
-    print(f"Selected radii: R={R:.3f}, r={r:.3f}")
-    for alpha_reg, xi_val in xi_map.items():
-        print(f"  alpha_reg={alpha_reg}: xi={xi_val:.6f}")
+    R = 10.
+    r = 10.
+
+    # radii, xi_map = _select_radii_for_xi(
+    #     X,
+    #     y,
+    #     T=T,
+    #     num_nodes=num_nodes,
+    #     network_topology=network_topology,
+    # )
+    # R, r = radii
+    # print(f"Selected radii: R={R:.3f}, r={r:.3f}")
+    # for alpha_reg, xi_val in xi_map.items():
+    #     print(f"  alpha_reg={alpha_reg}: xi={xi_val:.6f}")
 
     # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
     for alpha_reg in (0.0, 1.0):
-        w_hat, X_hist, losses, mse = run_bdoo_linear_regression(
+        w_hat, X_hist, losses, mse, avg_loss, avg_regret = run_bdoo_linear_regression(
             X,
             y,
             T=T,
@@ -431,8 +283,11 @@ def main() -> None:
         print("=" * 60)
         print(f"alpha_reg = {alpha_reg}")
         print(f"Final model shape: {w_hat.shape}")
-        print(f"Mean squared error: {mse:.6f}")
-        print(f"Loss history shape: {losses.shape}")
+        print(f"Mean squared error (full dataset): {mse:.6f}")
+        print(f"Loss history shape (returned by algo): {np.shape(losses)}")
+        print(f"Mean(losses) returned by algo: {float(np.mean(losses)):.6f}")
+        print(f"Avg loss per round (your f_t^i, averaged over learners): {avg_loss:.6f}")
+        print(f"Avg regret per round (normalized by T): {avg_regret:.6f}")
         print("=" * 60)
 
 

@@ -1,6 +1,11 @@
-import numpy as np
 import math
+from pathlib import Path
 from typing import Callable, Optional, Tuple
+
+import numpy as np
+from sklearn import preprocessing
+from sklearn.datasets import load_svmlight_file
+from sklearn.preprocessing import MaxAbsScaler
 
 
 def _project_to_l2_ball(X: np.ndarray, R: float) -> np.ndarray:
@@ -124,6 +129,158 @@ def _build_cycle_graph(num_nodes: int) -> np.ndarray:
         adj[i, j_next] = True
         adj[j_next, i] = True
     return adj
+
+
+def _load_bodyfat_dataset(dataset_path: Path | str) -> Tuple[np.ndarray, np.ndarray]:
+    """Load and preprocess the bodyfat dataset in LIBSVM format."""
+
+    X_sparse, y = load_svmlight_file(str(dataset_path))
+    X = X_sparse.toarray()
+
+    X = MaxAbsScaler().fit_transform(X)
+    X = preprocessing.normalize(X, norm="l2")
+
+    return X.astype(float), y.astype(float)
+
+
+def _make_loss_oracle(
+    X: np.ndarray,
+    y: np.ndarray,
+    samples: np.ndarray,
+    alpha_reg: float,
+) -> Callable[[int, int, np.ndarray], float]:
+    """Create the squared-loss oracle f(i, t, x) for the regression task."""
+
+    def oracle(i: int, t: int, x: np.ndarray) -> float:
+        idx = samples[t - 1, i]
+        a_i = X[idx]
+        b_i = y[idx]
+        residual = float(np.dot(a_i, x) - b_i)
+        loss = residual * residual
+        if alpha_reg:
+            loss += 0.5 * alpha_reg * float(np.dot(x, x))
+        return loss
+
+    return oracle
+
+
+def _compute_bounds(R: float, alpha_reg: float, max_abs_b: float) -> Tuple[float, float]:
+    """Compute Lipschitz and loss bounds for squared loss."""
+
+    lip = 2.0 * (R + max_abs_b) + alpha_reg * R
+    loss_bound = (R + max_abs_b) ** 2 + 0.5 * alpha_reg * (R**2)
+    return lip, loss_bound
+
+
+def _build_grid_graph(rows: int, cols: int) -> np.ndarray:
+    """Return the adjacency for a rows x cols grid network."""
+
+    if rows <= 0 or cols <= 0:
+        raise ValueError("Grid size must be positive.")
+
+    num_nodes = rows * cols
+    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
+    for r in range(rows):
+        for c in range(cols):
+            idx = r * cols + c
+            if r > 0:
+                up = (r - 1) * cols + c
+                adj[idx, up] = True
+                adj[up, idx] = True
+            if r < rows - 1:
+                down = (r + 1) * cols + c
+                adj[idx, down] = True
+                adj[down, idx] = True
+            if c > 0:
+                left = r * cols + (c - 1)
+                adj[idx, left] = True
+                adj[left, idx] = True
+            if c < cols - 1:
+                right = r * cols + (c + 1)
+                adj[idx, right] = True
+                adj[right, idx] = True
+
+    return adj
+
+
+def _build_grid3x3_graph(num_nodes: int) -> np.ndarray:
+    """Return the adjacency for a 3x3 grid network (9 nodes)."""
+
+    if num_nodes != 9:
+        raise ValueError("3x3 grid topology requires exactly 9 nodes.")
+
+    return _build_grid_graph(3, 3)
+
+
+def _build_cube_graph(num_nodes: int) -> np.ndarray:
+    """Return the adjacency for an 8-node cube (3-regular) network."""
+
+    if num_nodes != 8:
+        raise ValueError("Cube topology requires exactly 8 nodes.")
+
+    adj = np.zeros((num_nodes, num_nodes), dtype=bool)
+
+    edges = (
+        (0, 1),
+        (1, 2),
+        (2, 3),
+        (3, 0),
+        (4, 5),
+        (5, 6),
+        (6, 7),
+        (7, 4),
+        (0, 4),
+        (1, 5),
+        (2, 6),
+        (3, 7),
+    )
+
+    for i, j in edges:
+        adj[i, j] = True
+        adj[j, i] = True
+
+    return adj
+
+
+def _build_complete_graph(num_nodes: int) -> np.ndarray:
+    """Return the adjacency for a complete graph (no self-loops)."""
+
+    if num_nodes <= 0:
+        raise ValueError("Complete graph requires num_nodes > 0.")
+
+    adj = np.ones((num_nodes, num_nodes), dtype=bool)
+    np.fill_diagonal(adj, False)
+    return adj
+
+
+def _build_network_topology(topology: str, num_nodes: int) -> Tuple[np.ndarray, np.ndarray, float, float]:
+    """Construct adjacency, gossip matrix, degree-weight, and rho for a topology."""
+
+    if topology == "cycle":
+        base_adj = _build_cycle_graph(num_nodes)
+    elif topology == "grid3x3":
+        base_adj = _build_grid3x3_graph(num_nodes)
+    elif topology == "grid":
+        side = int(round(float(np.sqrt(num_nodes))))
+        if side * side != num_nodes:
+            raise ValueError("Grid topology requires num_nodes to be a perfect square.")
+        base_adj = _build_grid_graph(side, side)
+    elif topology in {"complete", "all", "all_connected"}:
+        base_adj = _build_complete_graph(num_nodes)
+    elif topology in {"cube", "hypercube"}:
+        base_adj = _build_cube_graph(num_nodes)
+    else:
+        raise ValueError(
+            "Unsupported topology. Use 'cycle', 'grid', 'grid3x3', 'cube', or 'complete'."
+        )
+
+    a = 1.0 / (1.0 + _compute_max_degree(base_adj))
+    gossip_matrix = _build_gossip_matrix(base_adj, a)
+    eigenvalues = np.linalg.eigvals(gossip_matrix)
+    eigenvalues_sorted = np.sort(np.real(eigenvalues))[::-1]
+    rho_value = float(eigenvalues_sorted[1])
+
+    return base_adj, gossip_matrix, rho_value, a
 
 
 def run_algorithm2_bandit_paper_params(
@@ -254,7 +411,11 @@ def run_algorithm2_bandit_paper_params(
     else:
         raise ValueError("setting must be 'convex' or 'strongly_convex'.")
 
+    while xi > 1:
+        xi /= 2.
+
     print("xi: ", xi)
+
     if xi >= 1.0:
         raise ValueError("xi = delta / r must be < 1; check R, r, L_f, C, rho, T.")
 
