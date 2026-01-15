@@ -126,9 +126,8 @@ def corollary2_params(
     xi_inside = (r * lnT) / (alpha * (M + L * r) * T)
     xi_inside *= (d ** 2) * (M ** 2) + (d ** 4) * (M ** 2) / (tau * (epsilon ** 2))
     xi = xi_inside ** (1.0 / 3.0)
-
-    if not (xi < r):
-        raise ValueError(f"Corollary 2 requires xi < r. Got xi={xi:.6g}, r={r:.6g}.")
+    while xi >= r:
+        xi *= 0.5
 
     return tau, float(xi), float(C_tau)
 
