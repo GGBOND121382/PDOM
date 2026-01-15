@@ -182,9 +182,9 @@ def run_ptf_pbd02_convex(
 
     if tau <= 0:
         raise ValueError("tau must be positive.")
+    if tau > T:
+        tau = T
     Z = int(math.ceil(T / tau))
-    if Z < 2:
-        raise ValueError(f"Need at least 2 batches: Z=ceil(T/tau) >= 2, got T={T}, tau={tau} -> Z={Z}.")
 
     r = cfg.r if cfg.r is not None else cfg.R
     if cfg.xi >= r:
@@ -288,7 +288,7 @@ def run_ptf_pbd02_convex(
         "laplace_scale": float(lap_scale),
         "loss_sum": float(loss_sum),
         "avg_loss_per_round": float(loss_sum) / float(n * T),
-        "tau": int(cfg.tau),
+        "tau": int(tau),
         "xi": float(cfg.xi),
         "eta": float(cfg.eta),
     }

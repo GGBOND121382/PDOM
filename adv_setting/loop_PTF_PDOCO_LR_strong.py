@@ -182,6 +182,8 @@ def run_ptf_pbd02_strongly_convex(
         raise ValueError("tau must be positive.")
     if T <= 0:
         raise ValueError("T must be positive.")
+    if tau > T:
+        tau = T
 
     r = cfg.r if cfg.r is not None else cfg.R
     if cfg.xi >= r:
@@ -287,7 +289,7 @@ def run_ptf_pbd02_strongly_convex(
         "theta": float(theta),
         "sigma2": float(sig2),
         "laplace_scale": float(lap_scale),
-        "tau": int(cfg.tau),
+        "tau": int(tau),
         "xi": float(cfg.xi),
         "alpha": float(cfg.alpha),
         "loss_sum": float(loss_sum),
