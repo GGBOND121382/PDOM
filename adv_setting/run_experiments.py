@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -350,7 +351,11 @@ def main() -> None:
     dataset_path = repo_root / "data" / "adv_setting" / "bodyfat"
     X, y = _load_bodyfat_dataset(dataset_path)
 
-    output_dir = Path(__file__).resolve().parent / "experiment_results"
+    output_root = os.environ.get("PDOM_OUTPUT_DIR", "").strip()
+    if output_root:
+        output_dir = Path(output_root)
+    else:
+        output_dir = Path(__file__).resolve().parent / "experiment_results"
 
     runs = 10
     base_seed = 20240101
