@@ -181,6 +181,7 @@ def _plot_experiment(
     log_x: bool = False,
     categorical: bool = False,
     order: Optional[List[object]] = None,
+    suffix: Optional[str] = None,
 ) -> None:
     if not summary_rows:
         return
@@ -218,7 +219,8 @@ def _plot_experiment(
     ax.grid(True, which="both", linestyle="--", linewidth=0.5, alpha=0.5)
     ax.legend(loc="best", fontsize=9)
     fig.tight_layout()
-    fig.savefig(output_dir / f"{name}.png", dpi=200)
+    filename = f"{name}.png" if suffix is None else f"{name}_{suffix}.png"
+    fig.savefig(output_dir / filename, dpi=200)
     plt.close(fig)
 
 
@@ -300,43 +302,47 @@ def _run_experiment(
     _write_csv(output_dir / f"{name}_runs.csv", run_rows)
     _write_csv(output_dir / f"{name}_summary.csv", summary_rows)
 
-    if name == "impact_learning_time":
-        _plot_experiment(
-            name=name,
-            summary_rows=summary_rows,
-            output_dir=output_dir,
-            x_key="T",
-            x_label="Learning time T",
-            log_x=True,
-        )
-    elif name == "impact_privacy_budget":
-        _plot_experiment(
-            name=name,
-            summary_rows=summary_rows,
-            output_dir=output_dir,
-            x_key="epsilon",
-            x_label="Privacy budget epsilon",
-            log_x=True,
-        )
-    elif name == "impact_num_learners":
-        _plot_experiment(
-            name=name,
-            summary_rows=summary_rows,
-            output_dir=output_dir,
-            x_key="num_nodes",
-            x_label="Number of learners (n)",
-            log_x=False,
-        )
+    if name == "impact_epsilon_and_T":
+        eps_values = sorted({float(r["epsilon"]) for r in summary_rows})
+        for eps in eps_values:
+            rows = [r for r in summary_rows if float(r["epsilon"]) == eps]
+            _plot_experiment(
+                name=name,
+                summary_rows=rows,
+                output_dir=output_dir,
+                x_key="T",
+                x_label="Learning time T",
+                log_x=True,
+                suffix=f"eps_{eps:g}",
+            )
     elif name == "impact_topology":
-        _plot_experiment(
-            name=name,
-            summary_rows=summary_rows,
-            output_dir=output_dir,
-            x_key="topology",
-            x_label="Topology",
-            categorical=True,
-            order=["cycle", "grid", "complete"],
-        )
+        topo_values = ["cycle", "grid", "complete"]
+        for topo in topo_values:
+            rows = [r for r in summary_rows if r["topology"] == topo]
+            if not rows:
+                continue
+            _plot_experiment(
+                name=name,
+                summary_rows=rows,
+                output_dir=output_dir,
+                x_key="T",
+                x_label="Learning time T",
+                log_x=True,
+                suffix=f"topo_{topo}",
+            )
+    elif name == "impact_num_learners":
+        n_values = sorted({int(r["num_nodes"]) for r in summary_rows})
+        for n in n_values:
+            rows = [r for r in summary_rows if int(r["num_nodes"]) == n]
+            _plot_experiment(
+                name=name,
+                summary_rows=rows,
+                output_dir=output_dir,
+                x_key="T",
+                x_label="Learning time T",
+                log_x=True,
+                suffix=f"n_{n}",
+            )
 
 
 def main() -> None:
@@ -349,14 +355,18 @@ def main() -> None:
     runs = 10
     base_seed = 20240101
 
-    # Impact of learning time: grid 3x3, epsilon=1
-    time_settings = [
-        {"T": T, "num_nodes": 9, "topology": "grid3x3", "epsilon": 1.0}
-        for T in [1000, 3000, 10000, 30000, 100000, 300000, 1000000]
+    t_values = [1000, 3000, 10000, 30000, 100000, 300000, 1000000]
+
+    # Impact of epsilon and T: 9-node grid
+    eps_values = [0.1, 1.0, 10.0]
+    eps_t_settings = [
+        {"T": T, "num_nodes": 9, "topology": "grid", "epsilon": eps}
+        for eps in eps_values
+        for T in t_values
     ]
     _run_experiment(
-        name="impact_learning_time",
-        settings=time_settings,
+        name="impact_epsilon_and_T",
+        settings=eps_t_settings,
         runs=runs,
         base_seed=base_seed,
         X=X,
@@ -364,14 +374,15 @@ def main() -> None:
         output_dir=output_dir,
     )
 
-    # Impact of privacy budgets: grid 3x3, T=100000
-    eps_settings = [
-        {"T": 100000, "num_nodes": 9, "topology": "grid3x3", "epsilon": eps}
-        for eps in [0.1, 1.0, 10.0]
+    # Impact of network topologies: 9-node cycle, grid, complete; T varies
+    topology_settings = [
+        {"T": T, "num_nodes": 9, "topology": topo, "epsilon": 1.0}
+        for topo in ["cycle", "grid", "complete"]
+        for T in t_values
     ]
     _run_experiment(
-        name="impact_privacy_budget",
-        settings=eps_settings,
+        name="impact_topology",
+        settings=topology_settings,
         runs=runs,
         base_seed=base_seed + 10000,
         X=X,
@@ -379,33 +390,18 @@ def main() -> None:
         output_dir=output_dir,
     )
 
-    # Impact of numbers of learners: grid networks, n in {4,9,16,25,36}
-    n_values = [4, 9, 16, 25, 36]
+    # Impact of numbers of learners: grid networks, n in {4,16,36}; T varies
+    n_values = [4, 16, 36]
     n_settings = [
-        {"T": 100000, "num_nodes": n, "topology": "grid", "epsilon": 1.0}
+        {"T": T, "num_nodes": n, "topology": "grid", "epsilon": 1.0}
         for n in n_values
+        for T in t_values
     ]
     _run_experiment(
         name="impact_num_learners",
         settings=n_settings,
         runs=runs,
         base_seed=base_seed + 20000,
-        X=X,
-        y=y,
-        output_dir=output_dir,
-    )
-
-    # Impact of network topologies: fixed T and epsilon
-    topology_settings = [
-        {"T": 100000, "num_nodes": 9, "topology": "cycle", "epsilon": 1.0},
-        {"T": 100000, "num_nodes": 9, "topology": "grid", "epsilon": 1.0},
-        {"T": 100000, "num_nodes": 9, "topology": "complete", "epsilon": 1.0},
-    ]
-    _run_experiment(
-        name="impact_topology",
-        settings=topology_settings,
-        runs=runs,
-        base_seed=base_seed + 30000,
         X=X,
         y=y,
         output_dir=output_dir,
