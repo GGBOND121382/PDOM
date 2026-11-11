@@ -13,7 +13,7 @@ from optimization_utils.BanditLogisticRegression import (
     _make_loss_oracle,
 )
 from optimization_utils.adv_setting_utils import (
-    compute_avg_loss_and_avg_regret_per_round,
+    StreamingAvgLossRegretAccumulator,
     proj_l2_ball,
     sample_unit_sphere,
 )
@@ -162,7 +162,16 @@ def run_algorithm7(
     proj_X: Optional[Callable[[np.ndarray], np.ndarray]] = None,
     sigma_seq: Optional[Union[Sequence[float], Callable[[int], float]]] = None,
     x0: Optional[np.ndarray] = None,
+    store_history: bool = True,
+    round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
 ) -> dict:
+    """Run Algorithm (7).
+
+    If ``store_history`` is False, the (T+1, n, d) state histories are not
+    allocated (the returned dict's ``x_hist``/``z_hist``/``w_hist`` are None)
+    and ``round_callback(t, x_pre, x_post)`` is invoked once per round with the
+    pre-update and post-update iterates of round t (1-based).
+    """
     n, d, T = cfg.n, cfg.d, cfg.T
     if proj_X is None:
         proj_X = lambda X: proj_l2_ball(X, radius=1.0)
@@ -185,10 +194,13 @@ def run_algorithm7(
         if x.shape != (n, d):
             raise ValueError(f"x0 must have shape {(n, d)}, got {x.shape}")
 
-    x_hist = np.zeros((T + 1, n, d), dtype=float)
-    z_hist = np.zeros((T + 1, n, d), dtype=float)
-    w_hist = np.zeros((T + 1, n), dtype=float)
-    x_hist[0], z_hist[0], w_hist[0] = x, z, w
+    if store_history:
+        x_hist = np.zeros((T + 1, n, d), dtype=float)
+        z_hist = np.zeros((T + 1, n, d), dtype=float)
+        w_hist = np.zeros((T + 1, n), dtype=float)
+        x_hist[0], z_hist[0], w_hist[0] = x, z, w
+    else:
+        x_hist = z_hist = w_hist = None
 
     for t in range(1, T + 1):
         A = A_seq[t - 1] if isinstance(A_seq, (list, tuple)) else A_seq(t)
@@ -223,8 +235,12 @@ def run_algorithm7(
         z_over_w = z_new / np.maximum(w_new[:, None], 1e-12)
         x_new = prox_map_quadratic_psi(z_over_w, alpha_t, proj_X)
 
+        x_pre = x
         w, z, x = w_new, z_new, x_new
-        x_hist[t], z_hist[t], w_hist[t] = x, z, w
+        if store_history:
+            x_hist[t], z_hist[t], w_hist[t] = x, z, w
+        if round_callback is not None:
+            round_callback(t, x_pre, x_new)
 
     return {"x_hist": x_hist, "z_hist": z_hist, "w_hist": w_hist}
 
@@ -327,7 +343,7 @@ def run_pbddo_linear_regression_cor1(
 
     Returns:
       w_hat
-      out (contains x_hist, z_hist, w_hist)
+      out (x_hist/z_hist/w_hist are None; histories are no longer stored)
       mse
       avg_loss_per_round   (averaged over learners, normalized by T)
       avg_regret_per_round (normalized by T)
@@ -356,7 +372,7 @@ def run_pbddo_linear_regression_cor1(
 
     # Build push-sum matrix A (fixed topology in this experiment)
     A = _build_pushsum_matrix_from_topology(network_topology, num_nodes)
-    A_seq = [A for _ in range(T)]
+    A_seq = lambda t: A
 
     # Corollary 1 delta*
     if delta_init is None:
@@ -391,24 +407,38 @@ def run_pbddo_linear_regression_cor1(
         rng=rng,
     )
 
-    projX = lambda X_: proj_l2_ball(X_, radius=R)
-    out = run_algorithm7(cost_oracle=cost_oracle, A_seq=A_seq, cfg=cfg, proj_X=projX)
-
-    x_hist = out["x_hist"]
-
-    # Average loss and average regret (both normalized by T)
-    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
-        X_hist=x_hist,
+    accumulator = StreamingAvgLossRegretAccumulator(
         samples=samples,
         X=X,
         y=y,
         alpha_reg=alpha_reg,
         R=R,
-        use_pre_update_iterate=True,  # uses x_hist[t-1] for round t
+    )
+    w_sum = np.zeros((num_nodes, dim), dtype=float)
+
+    def _on_round(t: int, x_pre: np.ndarray, x_post: np.ndarray) -> None:
+        # Regret uses the pre-update iterate (use_pre_update_iterate=True).
+        # w_hat averages the T+1 states x_hist[0..T]; the initial zero state
+        # contributes nothing, so summing the post-update states is equivalent.
+        nonlocal w_sum
+        accumulator.update(x_pre)
+        w_sum += x_post
+
+    projX = lambda X_: proj_l2_ball(X_, radius=R)
+    out = run_algorithm7(
+        cost_oracle=cost_oracle,
+        A_seq=A_seq,
+        cfg=cfg,
+        proj_X=projX,
+        store_history=False,
+        round_callback=_on_round,
     )
 
+    # Average loss and average regret (both normalized by T)
+    avg_loss_per_round, avg_regret_per_round = accumulator.finalize()
+
     # Global model: average across nodes and time
-    w_hat = x_hist.mean(axis=(0, 1))
+    w_hat = w_sum.sum(axis=0) / float((T + 1) * num_nodes)
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
@@ -450,7 +480,6 @@ def main() -> None:
         print(f"delta_star (Corollary 1) = {delta_star:.6g}")
         print(f"Final model shape: {w_hat.shape}")
         print(f"Mean squared error: {mse:.6f}")
-        print(f"x_hist shape: {out['x_hist'].shape}")
         print(f"Avg loss per round (normalized by T):  {avg_loss:.6f}")
         print(f"Avg regret per round (normalized by T): {avg_regret:.6f}")
         print("=" * 60)

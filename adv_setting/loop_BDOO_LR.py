@@ -35,7 +35,7 @@ from optimization_utils.BanditLogisticRegression import (
     _make_loss_oracle,
     run_algorithm2_bandit_paper_params,
 )
-from optimization_utils.adv_setting_utils import compute_avg_loss_and_avg_regret_per_round
+from optimization_utils.adv_setting_utils import StreamingAvgLossRegretAccumulator
 
 
 # Regret/comparator helpers are imported from optimization_utils.adv_setting_utils.
@@ -164,17 +164,17 @@ def run_bdoo_linear_regression(
     alpha_reg: float = 0.0,
     network_topology: str = "cycle",
     rng: np.random.Generator | None = None,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float, float, float]:
+) -> Tuple[np.ndarray, None, None, float, float, float]:
     """Apply BDOO (Algorithm 2) to the linear regression task.
 
     Returns
     -------
     w_hat : (d,)
         Global model (average across nodes and time).
-    X_hist : (T, n, d)
-        Model history.
-    losses : array-like
-        Losses returned by ``run_algorithm2_bandit_paper_params`` (as-is).
+    X_hist : None
+        The (T, n, d) history is no longer stored (memory); None is returned.
+    losses : None
+        The (T, n) bandit loss matrix is no longer stored; None is returned.
     mse : float
         MSE on the full dataset using w_hat (no reg term in MSE).
     avg_loss_per_round : float
@@ -202,7 +202,22 @@ def run_bdoo_linear_regression(
 
     setting = "strongly_convex" if alpha_reg > 0 else "convex"
 
-    X_hist, losses = run_algorithm2_bandit_paper_params(
+    accumulator = StreamingAvgLossRegretAccumulator(
+        samples=samples,
+        X=X,
+        y=y,
+        alpha_reg=alpha_reg,
+        R=R,
+    )
+    w_sum = np.zeros((num_nodes, dim), dtype=float)
+
+    def _on_round(t: int, x_pre: np.ndarray, x_post: np.ndarray) -> None:
+        # Regret uses the post-update iterate (use_pre_update_iterate=False).
+        nonlocal w_sum
+        accumulator.update(x_post)
+        w_sum += x_post
+
+    run_algorithm2_bandit_paper_params(
         loss_oracle=loss_oracle,
         T=T,
         num_nodes=num_nodes,
@@ -218,26 +233,20 @@ def run_bdoo_linear_regression(
         base_adj=base_adj,
         graph_mode="cycle",
         rng=rng,
+        store_history=False,
+        round_callback=_on_round,
     )
 
     # Compute average loss per round and average regret per round (normalized by T)
-    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
-        X_hist=X_hist,
-        samples=samples,
-        X=X,
-        y=y,
-        alpha_reg=alpha_reg,
-        R=R,
-        use_pre_update_iterate=False,
-    )
+    avg_loss_per_round, avg_regret_per_round = accumulator.finalize()
 
-    # Global model: average across nodes and time
-    w_hat = X_hist.mean(axis=(0, 1))
+    # Global model: average across nodes and time (initial zero iterate adds nothing)
+    w_hat = w_sum.sum(axis=0) / float((T + 1) * num_nodes)
 
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
-    return w_hat, X_hist, losses, mse, avg_loss_per_round, avg_regret_per_round
+    return w_hat, None, None, mse, avg_loss_per_round, avg_regret_per_round
 
 
 def main() -> None:
@@ -268,7 +277,7 @@ def main() -> None:
 
     # Convex (alpha_reg = 0) and strongly convex (alpha_reg = 1) cases
     for alpha_reg in (0.0, 1.0):
-        w_hat, X_hist, losses, mse, avg_loss, avg_regret = run_bdoo_linear_regression(
+        w_hat, _, _, mse, avg_loss, avg_regret = run_bdoo_linear_regression(
             X,
             y,
             T=T,
@@ -284,8 +293,6 @@ def main() -> None:
         print(f"alpha_reg = {alpha_reg}")
         print(f"Final model shape: {w_hat.shape}")
         print(f"Mean squared error (full dataset): {mse:.6f}")
-        print(f"Loss history shape (returned by algo): {np.shape(losses)}")
-        print(f"Mean(losses) returned by algo: {float(np.mean(losses)):.6f}")
         print(f"Avg loss per round (your f_t^i, averaged over learners): {avg_loss:.6f}")
         print(f"Avg regret per round (normalized by T): {avg_regret:.6f}")
         print("=" * 60)

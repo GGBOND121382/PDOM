@@ -5,10 +5,9 @@ PTF-PBDO^2 (Algorithm 1, convex) with Theorem 1 + Corollary 1 parameters
   (1) C_tau uses  sqrt(2) * ln(sqrt(14 n))  (NOT sqrt(2 ln(sqrt(14 n))))
   (2) accelerated-consensus theta uses 1/(1 + sqrt(1 - sigma2(P))) (NOT sigma2(P)^2)
 
-This script computes average regret via an externally imported function:
-  compute_avg_loss_and_avg_regret_per_round(...)
-
-You said you will manually import that function, so it is NOT defined here.
+This script computes average regret online (without storing the full action
+history) via StreamingAvgLossRegretAccumulator, fed through the config's
+action_callback.
 """
 
 from __future__ import annotations
@@ -31,7 +30,7 @@ from optimization_utils.adv_setting_utils import (
     l2_ball_projection,
     sample_unit_vectors,
     sigma2_of_gossip,
-    compute_avg_loss_and_avg_regret_per_round
+    StreamingAvgLossRegretAccumulator,
 )
 
 Array = np.ndarray
@@ -239,6 +238,10 @@ class PTF_PBDO2_Convex_Config:
     rng: Optional[np.random.Generator] = None  # shared experiment RNG; seed is fallback for standalone use
     store_actions: bool = False
     follow_paper_delay: bool = True
+    # Optional online observer: called as action_callback(t_global, x_tilde)
+    # for every played action, so callers can accumulate metrics without
+    # storing the full (T, n, d) actions array.
+    action_callback: Optional[Callable[[int, Array], None]] = None
 
 
 def run_ptf_pbd02_convex(
@@ -322,6 +325,8 @@ def run_ptf_pbd02_convex(
 
             if cfg.store_actions and actions is not None:
                 actions[t_global] = x_tilde
+            if cfg.action_callback is not None:
+                cfg.action_callback(t_global, x_tilde)
 
             losses = np.empty((n,), dtype=float)
             for i in range(n):
@@ -435,6 +440,14 @@ def run_ptf_pbd02_linear_regression_corollary1(
         M=float(M),
     )
 
+    accumulator = StreamingAvgLossRegretAccumulator(
+        samples=samples,
+        X=X,
+        y=y,
+        alpha_reg=alpha_reg,
+        R=R,
+    )
+
     cfg = PTF_PBDO2_Convex_Config(
         n=num_nodes,
         d=dim,
@@ -449,8 +462,9 @@ def run_ptf_pbd02_linear_regression_corollary1(
         r=float(r),
         seed=0,
         rng=rng,
-        store_actions=True,      # IMPORTANT: needed for regret computation
+        store_actions=False,     # regret is accumulated online via action_callback
         follow_paper_delay=True,
+        action_callback=lambda t_round, x_tilde: accumulator.update(x_tilde),
     )
 
     res = run_ptf_pbd02_convex(loss_fn, cfg)
@@ -461,24 +475,8 @@ def run_ptf_pbd02_linear_regression_corollary1(
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
-    # --- Compute avg loss + avg regret via externally imported function ---
-    if "compute_avg_loss_and_avg_regret_per_round" not in globals():
-        raise ImportError(
-            "compute_avg_loss_and_avg_regret_per_round is not imported. "
-            "Please manually import it before running."
-        )
-    if "actions" not in res:
-        raise RuntimeError("actions not found; set cfg.store_actions=True to compute regret.")
-
-    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
-        X_hist=res["actions"],   # (T,n,d): played x_{j,t}
-        samples=samples,         # (T,n)
-        X=X,
-        y=y,
-        alpha_reg=alpha_reg,
-        R=R,
-        use_pre_update_iterate=True,
-    )
+    # --- Avg loss + avg regret, accumulated online during the run ---
+    avg_loss_per_round, avg_regret_per_round = accumulator.finalize()
 
     res["avg_loss_per_round"] = float(avg_loss_per_round)
     res["avg_regret_per_round"] = float(avg_regret_per_round)

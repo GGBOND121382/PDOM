@@ -12,7 +12,7 @@ from optimization_utils.BanditLogisticRegression import (
     _make_loss_oracle,
 )
 from optimization_utils.adv_setting_utils import (
-    compute_avg_loss_and_avg_regret_per_round,
+    StreamingAvgLossRegretAccumulator,
     proj_l2_ball,
     sample_unit_vectors,
 )
@@ -153,6 +153,7 @@ def algorithm1_dp_opbf(
     rng: Optional[np.random.Generator] = None,
     z_diag_floor: float = 1e-12,
     return_history: bool = False,
+    round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Algorithm 1 in the paper (row-stochastic directed network):
@@ -161,6 +162,11 @@ def algorithm1_dp_opbf(
       Z_{t+1} = W Z_t, Z_0 = I (so z_{ii,t} is Z[i,i])
       g̃_{i,t} = (d/delta) f_{i,t}(x_{i,t} + delta u_{i,t}) u_{i,t}
       x_{i,t+1} = Proj( r_{i,t} - alpha_t * g̃_{i,t} / z_{ii,t} )
+
+    If ``round_callback`` is given, it is invoked once per round as
+    ``round_callback(t, x_pre, x_post)`` with the pre-update and post-update
+    iterates of the 0-based round t, allowing callers to avoid storing the
+    full history (``return_history=False``).
     """
     rng = rng if rng is not None else np.random.default_rng(seed)
 
@@ -212,10 +218,13 @@ def algorithm1_dp_opbf(
             # if t % 5000 == 10:
             #     print(np.sum(np.array(x_next[i]) ** 2))
 
+        x_pre = x
         x, Z = x_next, Z_next
 
         if return_history:
             X_hist[t + 1] = x
+        if round_callback is not None:
+            round_callback(t, x_pre, x_next)
 
     return (x, X_hist) if return_history else x
 
@@ -298,7 +307,8 @@ def run_pbddo_linear_regression_strong(
     Strongly-convex (ridge) linear regression wrapper.
 
     Returns:
-      w_hat, hist, mse, avg_loss_per_round, avg_regret_per_round
+      w_hat, hist (None; history is no longer stored), mse,
+      avg_loss_per_round, avg_regret_per_round
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -371,7 +381,25 @@ def run_pbddo_linear_regression_strong(
     print(f"  alpha(1)≈{alpha(0):.6g}, Delta(1)≈{Delta(0):.6g}, sigma(1)≈{sigma(0):.6g} (Laplace scale)")
 
     x0 = np.zeros((num_nodes, dim), dtype=float)
-    xT, hist = algorithm1_dp_opbf(
+
+    accumulator = StreamingAvgLossRegretAccumulator(
+        samples=samples,
+        X=X,
+        y=y,
+        alpha_reg=alpha_reg,
+        R=R,
+    )
+    w_sum = np.zeros((num_nodes, dim), dtype=float)
+
+    def _on_round(t: int, x_pre: np.ndarray, x_post: np.ndarray) -> None:
+        # Regret uses the pre-update iterate hist[t] (use_pre_update_iterate=True).
+        # w_hat averages the T+1 states hist[0..T]; the initial (projected) zero
+        # state contributes nothing, so summing post-update states is equivalent.
+        nonlocal w_sum
+        accumulator.update(x_pre)
+        w_sum += x_post
+
+    xT = algorithm1_dp_opbf(
         W=W,
         loss_fn=loss_fn,
         T=T,
@@ -380,23 +408,17 @@ def run_pbddo_linear_regression_strong(
         sigma=sigma,
         x0=x0,
         radius=R,
-        return_history=True,
+        return_history=False,
+        round_callback=_on_round,
         seed=0,
         rng=rng,
     )
+    hist = None
 
     # ---- average loss / regret normalized by T (averaged over learners) ----
-    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
-        X_hist=hist,        # (T+1,n,d)
-        samples=samples,    # (T,n)
-        X=X,
-        y=y,
-        alpha_reg=alpha_reg,
-        R=R,
-        use_pre_update_iterate=True,  # round t uses hist[t]
-    )
+    avg_loss_per_round, avg_regret_per_round = accumulator.finalize()
 
-    w_hat = hist.mean(axis=(0, 1))
+    w_hat = w_sum.sum(axis=0) / float((T + 1) * num_nodes)
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
@@ -404,7 +426,6 @@ def run_pbddo_linear_regression_strong(
     print(f"alpha_reg = {alpha_reg}")
     print(f"Final model shape: {w_hat.shape}")
     print(f"Mean squared error: {mse:.6f}")
-    print(f"History shape (T+1,n,d): {hist.shape}")
     print(f"Avg loss per round (normalized by T):  {avg_loss_per_round:.6f}")
     print(f"Avg regret per round (normalized by T): {avg_regret_per_round:.6f}")
     print("=" * 60)
@@ -446,7 +467,6 @@ def main() -> None:
     print(f"alpha_reg = {alpha_reg}")
     print(f"Final model shape: {w_hat.shape}")
     print(f"Mean squared error: {mse:.6f}")
-    print(f"History shape (T+1,n,d): {hist.shape}")
     print(f"Avg loss per round (normalized by T):  {avg_loss:.6f}")
     print(f"Avg regret per round (normalized by T): {avg_regret:.6f}")
     print("=" * 60)

@@ -17,23 +17,22 @@ from optimization_utils.adv_setting_utils import (
     l2_ball_projection,
     sample_unit_vectors,
     sigma2_of_gossip,
-    compute_avg_loss_and_avg_regret_per_round
+    StreamingAvgLossRegretAccumulator,
 )
 
 # ============================================================
 # IMPORTANT
 # ============================================================
-# You said `compute_avg_loss_and_avg_regret_per_round` will be manually imported
-# from another package. Make sure you import it before running, e.g.:
+# Average loss/regret is computed ONLINE via StreamingAvgLossRegretAccumulator
+# (fed through the config's action_callback), so the full (T, n, d) action
+# history is never stored.
 #
-# from <your_package> import compute_avg_loss_and_avg_regret_per_round
-#
-# The function must implement your corrected regret:
+# The accumulator implements the corrected regret:
 #   Reg(j,T) = Σ_{t=1}^T Σ_{i=1}^N f_{i,t}(x_{j,t})
 #              - min_{||x||<=R} Σ_{t=1}^T Σ_{i=1}^N f_{i,t}(x)
 #
-# and return (avg_loss_per_round, avg_regret_per_round) normalized by T
-# (and averaged over learners if that’s how your function is defined).
+# and returns (avg_loss_per_round, avg_regret_per_round) normalized by T
+# and averaged over learners.
 
 Array = np.ndarray
 
@@ -235,6 +234,10 @@ class PTF_PBDO2_StronglyConvex_Config:
     seed: int = 0
     rng: Optional[np.random.Generator] = None  # shared experiment RNG; seed is fallback for standalone use
     store_actions: bool = False  # store perturbed actions x~_{t,j} so regret can be computed
+    # Optional online observer: called as action_callback(t_global, x_tilde)
+    # for every played action, so callers can accumulate metrics without
+    # storing the full (T, n, d) actions array.
+    action_callback: Optional[Callable[[int, Array], None]] = None
 
 
 def run_ptf_pbd02_strongly_convex(
@@ -315,6 +318,8 @@ def run_ptf_pbd02_strongly_convex(
 
             if cfg.store_actions and actions is not None:
                 actions[t_global] = x_tilde  # actions[t, j] = x_{j,t} for regret
+            if cfg.action_callback is not None:
+                cfg.action_callback(t_global, x_tilde)
 
             losses = np.empty((n,), dtype=float)
             for i in range(n):
@@ -439,6 +444,14 @@ def run_ptf_pbd02_linear_regression_strong_corollary2(
         M=float(M),
     )
 
+    accumulator = StreamingAvgLossRegretAccumulator(
+        samples=samples,
+        X=X,
+        y=y,
+        alpha_reg=alpha_reg,
+        R=R,
+    )
+
     cfg = PTF_PBDO2_StronglyConvex_Config(
         n=num_nodes,
         d=dim,
@@ -453,7 +466,8 @@ def run_ptf_pbd02_linear_regression_strong_corollary2(
         r=float(r),
         seed=0,
         rng=rng,
-        store_actions=True,  # IMPORTANT: needed by compute_avg_loss_and_avg_regret_per_round
+        store_actions=False,  # regret is accumulated online via action_callback
+        action_callback=lambda t_round, x_tilde: accumulator.update(x_tilde),
     )
 
     res = run_ptf_pbd02_strongly_convex(loss_fn, cfg)
@@ -464,24 +478,8 @@ def run_ptf_pbd02_linear_regression_strong_corollary2(
     preds = X @ w_hat
     mse = float(np.mean((preds - y) ** 2))
 
-    # ---- Compute avg loss + avg regret via the external function ----
-    if "compute_avg_loss_and_avg_regret_per_round" not in globals():
-        raise ImportError(
-            "compute_avg_loss_and_avg_regret_per_round is not imported. "
-            "Please manually import it before running."
-        )
-    if "actions" not in res:
-        raise RuntimeError("actions not found; expected cfg.store_actions=True.")
-
-    avg_loss_per_round, avg_regret_per_round = compute_avg_loss_and_avg_regret_per_round(
-        X_hist=res["actions"],  # (T,n,d): use played x_{j,t} (here x_tilde)
-        samples=samples,        # (T,n): defines (a_{i,t}, b_{i,t})
-        X=X,
-        y=y,
-        alpha_reg=alpha_reg,
-        R=R,
-        use_pre_update_iterate=True,  # irrelevant for (T,n,d)
-    )
+    # ---- Avg loss + avg regret, accumulated online during the run ----
+    avg_loss_per_round, avg_regret_per_round = accumulator.finalize()
 
     res["avg_loss_per_round"] = float(avg_loss_per_round)
     res["avg_regret_per_round"] = float(avg_regret_per_round)

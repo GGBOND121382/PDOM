@@ -308,7 +308,11 @@ def run_algorithm2_bandit_paper_params(
     # Optionally provide a fixed adjacency to override graph_mode
     base_adj: Optional[np.ndarray] = None,
     rng: Optional[np.random.Generator] = None,
-) -> Tuple[np.ndarray, np.ndarray]:
+    # Memory-saving mode: skip storing the full (T+1, n, d) history and report
+    # each round's iterates through round_callback(t, x_pre, x_post) instead.
+    store_history: bool = True,
+    round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """
     BDOO baseline (YanSVQ13-style, in our bandit setting).
 
@@ -353,13 +357,21 @@ def run_algorithm2_bandit_paper_params(
         matrix. Overrides graph_mode and is used at every round.
     rng : np.random.Generator, optional
         RNG; default np.random.default_rng().
+    store_history : bool
+        If False, do not allocate the (T+1, num_nodes, dim) history or the
+        (T, num_nodes) loss matrix; both return values are then None.
+    round_callback : callable, optional
+        Called once per round as round_callback(t, x_pre, x_post) with the
+        pre-update and post-update iterates of round t (1-based).
 
     Returns
     -------
-    X_hist : np.ndarray
+    X_hist : np.ndarray or None
         Shape (T + 1, num_nodes, dim), X_hist[t, i] = x_{i,t}.
-    losses : np.ndarray
+        None when store_history=False.
+    losses : np.ndarray or None
         Shape (T, num_nodes), losses[t-1, i] = f_{i,t}(x_{i,t} + δ u_{i,t}).
+        None when store_history=False.
     """
     if rng is None:
         rng = np.random.default_rng()
@@ -446,14 +458,19 @@ def run_algorithm2_bandit_paper_params(
         gossip_fixed = _build_gossip_matrix(adj_fixed, a)
 
     # ====== Main algorithm ======
-    X_hist = np.zeros((T + 1, num_nodes, dim), dtype=float)  # x_{i,1} = 0
-    losses = np.zeros((T, num_nodes), dtype=float)
+    if store_history:
+        X_hist = np.zeros((T + 1, num_nodes, dim), dtype=float)  # x_{i,1} = 0
+        losses = np.zeros((T, num_nodes), dtype=float)
+    else:
+        X_hist = None
+        losses = None
+    x_state = np.zeros((num_nodes, dim), dtype=float)
 
     # Projection radius for (1 - ξ)K
     R_shrunk = (1.0 - xi) * R
 
     for t in range(1, T + 1):
-        x_t = X_hist[t - 1]  # shape (num_nodes, dim)
+        x_t = x_state  # shape (num_nodes, dim)
 
         # 1) sample directions u_{i,t} on unit sphere
         U = np.zeros_like(x_t)
@@ -465,7 +482,8 @@ def run_algorithm2_bandit_paper_params(
         for i in range(num_nodes):
             query_point = x_t[i] + delta * U[i]
             f_vals[i] = loss_oracle(i, t, query_point)
-        losses[t - 1] = f_vals
+        if store_history:
+            losses[t - 1] = f_vals
 
         # 3) gradient estimators:
         #    g_{i,t} = (d / δ) f_{i,t}(x_{i,t} + δ u_{i,t}) u_{i,t}
@@ -491,7 +509,11 @@ def run_algorithm2_bandit_paper_params(
             mixed = mixed_all[i]
             X_next[i] = _proj_l2_ball(mixed, R_shrunk)
 
-        X_hist[t] = X_next
+        if store_history:
+            X_hist[t] = X_next
+        x_state = X_next
+        if round_callback is not None:
+            round_callback(t, x_t, X_next)
 
     return X_hist, losses
 

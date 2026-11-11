@@ -291,3 +291,79 @@ def compute_avg_loss_and_avg_regret_per_round(
 
     avg_regret_per_round = float(avg_loss_per_round - comp_per_round)
     return float(avg_loss_per_round), float(avg_regret_per_round)
+
+
+class StreamingAvgLossRegretAccumulator:
+    """Online (memory-light) equivalent of compute_avg_loss_and_avg_regret_per_round.
+
+    Instead of storing the full (T, n, d) iterate history and scoring it after
+    the simulation, feed each round's decision matrix ``x_t`` (shape (n, d),
+    aligned with ``samples[t]``) to :meth:`update` in round order and call
+    :meth:`finalize` at the end. The per-round operations are identical to the
+    batch version, so the resulting metrics match.
+    """
+
+    def __init__(
+        self,
+        *,
+        samples: np.ndarray,
+        X: np.ndarray,
+        y: np.ndarray,
+        alpha_reg: float,
+        R: float,
+    ) -> None:
+        if samples.ndim != 2:
+            raise ValueError(f"samples must be 2D (T,n), got {samples.shape}")
+        self._samples = samples
+        self._X = X
+        self._y = y
+        self._alpha_reg = float(alpha_reg)
+        self._R = float(R)
+        self._T, self._n = samples.shape
+        d = X.shape[1]
+        self._G = np.zeros((d, d), dtype=float)
+        self._h = np.zeros(d, dtype=float)
+        self._sum_b2 = 0.0
+        self._total_loss = 0.0
+        self._t = 0
+
+    def update(self, x_t: np.ndarray) -> None:
+        """Accumulate one round. ``x_t[j]`` is learner j's decision this round."""
+        if self._t >= self._T:
+            raise RuntimeError(f"update called more than T={self._T} times")
+        X_t = np.asarray(x_t, dtype=float)
+        if X_t.shape != (self._n, self._X.shape[1]):
+            raise ValueError(f"x_t must have shape {(self._n, self._X.shape[1])}, got {X_t.shape}")
+
+        idx = self._samples[self._t]   # (n,) indices for each i at time t
+        A_t = self._X[idx]             # (n,d) rows are a_{i,t}
+        b_t = self._y[idx]             # (n,)   entries are b_{i,t}
+
+        preds = A_t @ X_t.T
+        resid = preds - b_t[:, None]
+        sq_sum_per_j = np.sum(resid * resid, axis=0)
+        reg_sum_per_j = 0.5 * self._alpha_reg * float(self._n) * np.sum(X_t * X_t, axis=1)
+        self._total_loss += float(np.sum(sq_sum_per_j + reg_sum_per_j))
+
+        self._G += A_t.T @ A_t
+        self._h += A_t.T @ b_t
+        self._sum_b2 += float(b_t @ b_t)
+        self._t += 1
+
+    def finalize(self) -> Tuple[float, float]:
+        """Return (avg_loss_per_round, avg_regret_per_round)."""
+        if self._t != self._T:
+            raise RuntimeError(f"finalize called after {self._t} rounds; expected {self._T}")
+        T, n = self._T, self._n
+
+        avg_loss_per_round = self._total_loss / float(T * n)
+
+        x_star = _solve_ridge_in_l2_ball(
+            self._G, self._h, alpha_reg=self._alpha_reg, scale=float(T * n), R=self._R,
+        )
+        comp_sq_avg = float(x_star @ self._G @ x_star - 2.0 * self._h @ x_star + self._sum_b2) / float(T * n)
+        comp_avg_per_sample = comp_sq_avg + 0.5 * self._alpha_reg * float(x_star @ x_star)
+        comp_per_round = float(n) * comp_avg_per_sample
+
+        avg_regret_per_round = float(avg_loss_per_round - comp_per_round)
+        return float(avg_loss_per_round), float(avg_regret_per_round)
