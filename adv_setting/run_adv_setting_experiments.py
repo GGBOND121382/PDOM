@@ -61,8 +61,12 @@ def main() -> None:
     ap.add_argument("--eps_values", type=str, default="0.1,1.0,10.0", help="Comma-separated eps values.")
     ap.add_argument("--skip_migration", action="store_true", help="Skip migrating legacy CSVs.")
     ap.add_argument("--include_fixed_block", action="store_true", help="Include the R1-2 fixed-block-size baseline in each experiment.")
+    ap.add_argument("--include_fixed_block_optimized_eta", action="store_true",
+                    help="Also include the second Sec. IV-A fixed-block choice in convex experiments.")
     ap.add_argument("--tuning", choices=["refined", "legacy"], default="refined", help="Select the manuscript-matched R1-5 Corollary 1-2 formulas (refined) or the pre-R1-5 legacy schedule")
     args = ap.parse_args()
+    if args.include_fixed_block_optimized_eta and (not args.include_fixed_block or args.tuning != "refined"):
+        ap.error("--include_fixed_block_optimized_eta requires --include_fixed_block and refined tuning.")
     os.environ["PDOM_R15_TUNING"] = args.tuning
 
     repo_root = Path(__file__).resolve().parent.parent
@@ -96,7 +100,9 @@ def main() -> None:
         ap.error(f"Unsupported experiment(s): {unknown}. Supported: {sorted(supported)}")
     exp_set = set(experiments)
     alpha_algorithms = [
-        (C.ALGORITHMS_ALPHA0 + ([C.FIXED_BLOCK_ALPHA0] if args.include_fixed_block else []), "alpha0"),
+        (C.ALGORITHMS_ALPHA0
+         + ([C.FIXED_BLOCK_ALPHA0] if args.include_fixed_block else [])
+         + ([C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0] if args.include_fixed_block_optimized_eta else []), "alpha0"),
         (C.ALGORITHMS_ALPHA1 + ([C.FIXED_BLOCK_ALPHA1] if args.include_fixed_block else []), "alpha1"),
     ]
 

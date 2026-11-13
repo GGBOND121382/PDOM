@@ -80,6 +80,18 @@ class FixedBlockComparisonTests(unittest.TestCase):
         self.assertIn('PTF-PBDOO-fixed-block-cor1', {spec.name for spec in [C.FIXED_BLOCK_ALPHA0]})
         self.assertIn('PTF-PBDOO-fixed-block-strong', {spec.name for spec in [C.FIXED_BLOCK_ALPHA1]})
 
+    def test_full_comparison_adds_only_the_convex_baseline_at_every_private_point(self):
+        for experiment in ('impact_epsilon_and_T', 'impact_topology', 'impact_num_learners'):
+            for alpha in ('alpha0', 'alpha1'):
+                old = expected_keys(experiment, alpha, [1000, 3000], [0.1, 1, 10], True)
+                new = expected_keys(experiment, alpha, [1000, 3000], [0.1, 1, 10], True, True)
+                self.assertTrue(old <= new)
+                expected = {
+                    (key[0], C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, *key[2:])
+                    for key in old if key[1] == 'PTF-PBDOO-cor1'
+                }
+                self.assertEqual(new - old, expected)
+
     def test_floor_rejects_too_short_horizon(self):
         with self.assertRaisesRegex(ValueError, 'ceil\\(C_tau\\) <= T'):
             fixed_block_params_convex(**dict(self.params, T=1))

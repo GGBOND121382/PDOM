@@ -50,6 +50,7 @@ def expected_keys(
     t_values: list[int],
     eps_values: list[float],
     include_fixed_block: bool = False,
+    include_fixed_block_optimized_eta: bool = False,
 ) -> set[tuple[str, ...]]:
     alpha = 0.0 if alpha_label == "alpha0" else 1.0
     bdoo, pbdoo, proposed = ALGORITHMS[alpha_label]
@@ -82,6 +83,11 @@ def expected_keys(
                     keys.add(_key(experiment, fixed, alpha, T, 1.0, n, "grid"))
     else:
         raise ValueError(f"Unsupported experiment: {experiment}")
+    if include_fixed_block_optimized_eta and alpha_label == "alpha0":
+        keys.update(
+            (key[0], C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, *key[2:])
+            for key in tuple(keys) if key[1] == proposed
+        )
     return keys
 
 
@@ -93,10 +99,14 @@ def main() -> None:
     ap.add_argument("--runs", type=int, default=10)
     ap.add_argument("--base_seed", type=int, default=20261109)
     ap.add_argument("--include_fixed_block", action="store_true", help="Expect the R1-2 fixed-block baseline in every setting.")
+    ap.add_argument("--include_fixed_block_optimized_eta", action="store_true",
+                    help="Also expect the optimized-eta fixed-block baseline in every convex setting.")
     ap.add_argument("--t_values", default="1000,3000,10000,30000,100000,300000,1000000")
     ap.add_argument("--eps_values", default="0.1,1,10")
     ap.add_argument("--experiments", default="impact_epsilon_and_T,impact_topology")
     args = ap.parse_args()
+    if args.include_fixed_block_optimized_eta and not args.include_fixed_block:
+        ap.error("--include_fixed_block_optimized_eta requires --include_fixed_block.")
 
     if args.runs <= 0:
         ap.error("--runs must be positive")
@@ -134,7 +144,11 @@ def main() -> None:
                 base_seed=args.base_seed,
             )
             actual = {C.row_key(row, C.RUN_KEY_FIELDS) for row in rows}
-            expected = expected_keys(experiment, alpha_label, t_values, eps_values, include_fixed_block=args.include_fixed_block)
+            expected = expected_keys(
+                experiment, alpha_label, t_values, eps_values,
+                include_fixed_block=args.include_fixed_block,
+                include_fixed_block_optimized_eta=args.include_fixed_block_optimized_eta,
+            )
             missing = expected - actual
             unexpected = actual - expected
 

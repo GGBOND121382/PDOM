@@ -3,7 +3,7 @@ from __future__ import annotations
 """One-command R1-2/R1-9 Bodyfat experiment pipeline.
 
 Runs, in order:
-  1. the manuscript-matched experiment driver (including the R1-2 fixed-block baseline),
+  1. the manuscript-matched experiment driver (including both convex R1-2 fixed-block choices),
   2. exact run/seed/metric validation,
   3. summary recomputation and figure generation.
 
@@ -38,7 +38,7 @@ def main() -> None:
         description=(
             "Run the complete revised IoTJ Bodyfat experiment pipeline: "
             "experiment -> validate -> recompute summaries -> plot. "
-            "The R1-2 Fixed-block baseline is included automatically."
+            "Refined tuning includes both convex R1-2 fixed-block choices automatically."
         )
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ def main() -> None:
     parser.add_argument("--eps-values")
     parser.add_argument("--experiments")
     parser.add_argument("--fixed-block-optimized-eta", action="store_true",
-                        help="Run only the paired R1-2 convex grid supplement (40 runs by default).")
+                        help="Run only the earlier paired convex grid pilot instead of the full pipeline.")
     parser.add_argument("--baseline-csv", help="Original convex runs CSV for paired optimized-eta runs.")
     parser.add_argument("--dry-run", action="store_true", help="Print all stages without executing them.")
     args = parser.parse_args()
@@ -117,18 +117,21 @@ def main() -> None:
     ]
 
     python = sys.executable
+    fixed_block_flags = ["--include_fixed_block"]
+    if args.tuning == "refined":
+        fixed_block_flags.append("--include_fixed_block_optimized_eta")
     run_cmd = [
         python, str(ROOT / "adv_setting" / "run_adv_setting_experiments.py"),
         *common,
         "--dataset", str(dataset),
         "--tuning", args.tuning,
-        "--include_fixed_block",
+        *fixed_block_flags,
         "--skip_migration",
     ]
     validate_cmd = [
         python, str(ROOT / "adv_setting" / "validate_r1_9_runs.py"),
         *common,
-        "--include_fixed_block",
+        *fixed_block_flags,
     ]
     plot_cmd = [
         python, str(ROOT / "adv_setting" / "plot_adv_setting_results.py"),
@@ -147,7 +150,8 @@ def main() -> None:
     print(f"  T values      : {args.t_values or DEFAULT_T_VALUES}", flush=True)
     print(f"  Epsilon values: {args.eps_values or DEFAULT_EPS_VALUES}", flush=True)
     print(f"  Experiments   : {experiment_list}", flush=True)
-    print("  Fixed-block   : ENABLED (R1-2)", flush=True)
+    print("  Fixed-block   : " + ("2 convex, 1 strongly convex" if args.tuning == "refined"
+                                   else "1 per convexity case (legacy)"), flush=True)
 
     _run("STAGE 1/3: Run or resume all requested experiments", run_cmd, dry_run=args.dry_run)
     _run("STAGE 2/3: Validate run counts, seeds, and metrics", validate_cmd, dry_run=args.dry_run)

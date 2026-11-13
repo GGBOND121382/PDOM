@@ -7,6 +7,7 @@ import os
 import sys
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from functools import partial
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
@@ -208,11 +209,12 @@ def _run_ptf_pbd02_strong(
 def _run_ptf_pbd02_cor1_fixed_block(
     X: np.ndarray, y: np.ndarray, *, T: int, num_nodes: int,
     topology: str, epsilon: float, rng: np.random.Generator,
+    parameter_selection: str = "fixed_block",
 ) -> Tuple[float, float, float]:
     _, _, mse, avg_loss, avg_regret = run_ptf_pbd02_linear_regression_corollary1(
         X, y, T=T, num_nodes=num_nodes, epsilon=epsilon,
         R=10.0, r=10.0, alpha_reg=0.0, network_topology=topology,
-        rng=rng, parameter_selection="fixed_block",
+        rng=rng, parameter_selection=parameter_selection,
     )
     return float(avg_regret), float(avg_loss), float(mse)
 
@@ -231,6 +233,11 @@ def _run_ptf_pbd02_strong_fixed_block(
 
 FIXED_BLOCK_ALPHA0 = AlgorithmSpec(
     "PTF-PBDOO-fixed-block-cor1", _run_ptf_pbd02_cor1_fixed_block,
+    uses_epsilon=True, alpha_reg=0.0,
+)
+FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0 = AlgorithmSpec(
+    "PTF-PBDOO-fixed-block-optimized-eta-cor1",
+    partial(_run_ptf_pbd02_cor1_fixed_block, parameter_selection="fixed_block_optimized_eta"),
     uses_epsilon=True, alpha_reg=0.0,
 )
 FIXED_BLOCK_ALPHA1 = AlgorithmSpec(

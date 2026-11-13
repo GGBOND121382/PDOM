@@ -42,6 +42,7 @@ ALG_DISPLAY_NAME: Dict[str, str] = {
     "PTF-PBDOO-cor1": r"P$\text{B}^2$D-FTRL",
     "PTF-PBDOO-strong": r"P$\text{B}^2$D-FTAL",
     "PTF-PBDOO-fixed-block-cor1": r"P$\text{B}^2$D-FTRL (fixed block)",
+    C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name: r"P$\text{B}^2$D-FTRL (fixed block, opt. $\eta$)",
     "PTF-PBDOO-fixed-block-strong": r"P$\text{B}^2$D-FTAL (fixed block)",
 }
 
@@ -216,6 +217,11 @@ def _print_regret_ratios(
     _emit(ftrl, pbdoo, "P^2D-FTRL / PBDOO")
     _emit(ftal, bdoo, "P^2D-FTAL / BDOO")
     _emit(ftal, pbdoo, "P^2D-FTAL / PBDOO")
+    if alpha_label == "alpha0":
+        _emit(ftrl, C.FIXED_BLOCK_ALPHA0.name, "P^2D-FTRL / fixed block")
+        _emit(ftrl, C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, "P^2D-FTRL / fixed block (optimized eta)")
+    else:
+        _emit(ftal, C.FIXED_BLOCK_ALPHA1.name, "P^2D-FTAL / fixed block")
 
 
 def _save_fig(fig: plt.Figure, path: Path) -> None:
@@ -365,9 +371,17 @@ def _make_alg_rgb_color_map(display_alg_names: List[str]) -> Dict[str, str]:
             out[a] = "gold"
         elif "(fixed block)" in a:
             out[a] = "black"
+        elif "(fixed block," in a:
+            out[a] = "tab:purple"
         else:
             out[a] = "blue"
     return out
+
+
+def _alg_linestyle(display_name: str) -> str:
+    if "(fixed block," in display_name:
+        return "-."
+    return "--" if "(fixed block)" in display_name else "-"
 
 
 # ===================== Core plot helper (fixed color per algorithm) =====================
@@ -411,7 +425,7 @@ def _plot_lines_on_ax_fixed_alg_color(
             ys_sorted,
             yerr=yerr_sorted,
             marker=marker_map.get(disp_alg, "o"),
-            linestyle="--" if "(fixed block)" in disp_alg else "-",
+            linestyle=_alg_linestyle(disp_alg),
             color=alg_color_map.get(disp_alg, "black"),
             capsize=3,
         )
@@ -494,7 +508,7 @@ def plot_impact_epsilon_three_subplots_per_alpha(
 
     # shared algorithm legend above all subplots (RGB colors)
     alg_handles = [
-        Line2D([0], [0], color=alg_color_map.get(a, "black"), marker=marker_map[a], linestyle="--" if "(fixed block)" in a else "-", label=a)
+        Line2D([0], [0], color=alg_color_map.get(a, "black"), marker=marker_map[a], linestyle=_alg_linestyle(a), label=a)
         for a in display_alg_names
     ]
     leg_alg = fig.legend(
@@ -579,7 +593,7 @@ def plot_impact_topology_three_subplots_per_alpha(
 
     # shared algorithm legend above
     alg_handles = [
-        Line2D([0], [0], color=alg_color_map.get(a, "black"), marker=marker_map[a], linestyle="--" if "(fixed block)" in a else "-", label=a)
+        Line2D([0], [0], color=alg_color_map.get(a, "black"), marker=marker_map[a], linestyle=_alg_linestyle(a), label=a)
         for a in display_alg_names
     ]
     leg = fig.legend(
