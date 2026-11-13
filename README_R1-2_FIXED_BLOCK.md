@@ -1,10 +1,10 @@
 # R1-2 fixed-block-size comparison baseline
 
-This is a minimal extension of `PDOM_R1-9_code_ready.zip`. Original algorithms and `refined` Corollary 1/2 settings remain unchanged. Only **one** R1-2 fixed-block baseline is added for each convexity case; no mixing ablation or extra optimization variant is introduced.
+The default pipeline includes one R1-2 fixed-block baseline for each convexity case. The original algorithms and `refined` Corollary 1/2 settings remain unchanged. A separate, opt-in convex supplement implements the second fixed-block comparison in Sec. IV-A.
 
 ## Exactly which choice is implemented
 
-* **Convex (PB²D-FTRL)**: the **first** Fixed-block-size comparison in `paper/design.tex` Sec. IV-A and `response/response1.tex` R1-2. It fixes `tau = ceil(C_tau)` and `eta = R / (L sqrt(tau T))` as cited there. The exploration radius balances the two `xi`-dependent terms of Theorem 1 under this fixed `eta`, then follows the existing R1-3 `0.9r` feasibility cap. The alternative convex paragraph that jointly re-optimizes `eta,xi` with fixed `tau` is **not** added as another baseline.
+* **Convex (PB²D-FTRL)**: the **first** Fixed-block-size comparison in `paper/design.tex` Sec. IV-A and `response/response1.tex` R1-2. It fixes `tau = ceil(C_tau)` and `eta = R / (L sqrt(tau T))` as cited there. The exploration radius balances the two `xi`-dependent terms of Theorem 1 under this fixed `eta`, then follows the existing R1-3 `0.9r` feasibility cap.
 * **Strongly convex (PB²D-FTAL)**: Fixed-block-size comparison in Sec. IV-B: `tau = ceil(C_tau)`, and `xi` chosen via Theorem 2/Corollary 2's two balancing expressions evaluated at this fixed block size, with the same `0.9r` safeguard.
 * Both versions reuse the original optimized algorithm core, DP perturbation, and accelerated mixing without changes. Only parameter selection differs.
 
@@ -39,6 +39,32 @@ To resume an interrupted run, repeat the **same command**, keeping the output di
 For a small smoke test, override the settings, for example `--runs 1 --t-values 1000 --eps-values 1 --output-dir adv_setting/experiment_results_pilot`. Do not use pilot results in the manuscript.
 
 The old root-level runner is preserved as `run_legacy_experiments.py`; the previous `adv_setting/run_experiments.py` implementation is preserved as `adv_setting/run_experiments_legacy.py`. Both `python run_experiments.py` and `python adv_setting/run_experiments.py` now invoke the revised one-click pipeline.
+
+## Optional paired convex comparison with optimized eta
+
+```bash
+python run_experiments.py --fixed-block-optimized-eta
+```
+
+This runs only the **second** fixed-block comparison in Sec. IV-A: use
+`tau = ceil(C_tau)`, evaluate the Corollary 1 balancing formulas for
+`xi` at that block size, cap it at `0.9r`, and compute the corresponding
+`eta`. No empirical step-size sweep is used. Strongly convex runs and
+the existing CSVs and figures are unchanged.
+
+The default runs the 9-learner grid with `T = 10000,100000`,
+`epsilon = 1,10`, and 10 runs per setting. It reuses the seed from each
+matching row of `adv_setting/experiment_results_R1-2_fixed_block/impact_epsilon_and_T_alpha0_runs.csv`.
+Because block size is unchanged, the paired runs use the same sample
+indices and perturbation draws, with Laplace draws scaled for the new
+`xi`. Pass `--baseline-csv` for another copy of the original run CSV and
+`--dataset` if the data are not in the repository's default location.
+
+The separate output directory `adv_setting/experiment_results_R1-2_fixed_block_optimized_eta`
+contains the per-run parameters, paired regrets, and a summary of
+`regret_delta = optimized - original` (negative is better). Repeat
+the same command with the same dataset and baseline CSV to resume.
+Use a separate `--output-dir` for a different run configuration.
 
 ## Manual stages (optional)
 

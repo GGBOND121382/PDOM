@@ -166,6 +166,17 @@ def corollary1_params(
     if tau > T:
         raise ValueError(f"Corollary 1 requires tau <= T, but computed tau={tau} for T={T}.")
 
+    xi, eta = _optimized_xi_eta_at_tau(
+        T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, L=L, M=M, tau=tau,
+    )
+    return tau, xi, eta, float(C_tau)
+
+
+def _optimized_xi_eta_at_tau(
+    *, T: int, d: int, n: int, epsilon: float, r: float,
+    C_norm: float, L: float, M: float, tau: int,
+) -> Tuple[float, float]:
+    """Theorem 1 balancing rules at a given integer block size."""
     xi_bandit = (
         (d**2 * M**2 * r**2 * C_norm**2)
         / (T * (M + L*r)**2)
@@ -183,22 +194,13 @@ def corollary1_params(
         + L * d**2 * M / (epsilon * xi)
     )
     eta = C_norm/math.sqrt(denom)
-    return tau, float(xi), float(eta), float(C_tau)
+    return float(xi), float(eta)
 
-def fixed_block_params_convex(
+
+def _fixed_block_size(
     *, T: int, d: int, n: int, epsilon: float, r: float,
     C_norm: float, P: Array, L: float, M: float,
-) -> Tuple[int, float, float, float]:
-    """R1-2 Sec. IV-A first fixed-block-size comparison (not the jointly
-    re-optimized-eta comparison):
-
-      tau = ceil(C_tau),  eta = R / (L sqrt(tau T)),
-
-    with xi balancing the xi-dependent terms in Theorem 1 under those
-    fixed choices. The two balancing expressions come respectively from
-    (d^2 M^2 + d^4 M^2/(n tau eps^2)) / xi^2 and L d^2 M/(eps xi).
-    The 0.9r safeguard is exactly the paper's R1-3 implementation rule.
-    """
+) -> Tuple[int, float]:
     if not all(v > 0 for v in (T, d, n, epsilon, r, C_norm, L, M)):
         raise ValueError("Require T,d,n,epsilon,r,R,L,M > 0.")
     sig2 = float(sigma2_of_gossip(P))
@@ -209,12 +211,37 @@ def fixed_block_params_convex(
     tau = int(math.ceil(C_tau))
     if tau > T:
         raise ValueError(f"Fixed-block comparison requires ceil(C_tau) <= T: tau={tau}, T={T}")
+    return tau, float(C_tau)
+
+
+def fixed_block_params_convex(
+    *, T: int, d: int, n: int, epsilon: float, r: float,
+    C_norm: float, P: Array, L: float, M: float,
+) -> Tuple[int, float, float, float]:
+    """First Sec. IV-A comparison: fix tau and eta, then balance xi."""
+    tau, C_tau = _fixed_block_size(
+        T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, P=P, L=L, M=M,
+    )
     eta = C_norm / (L * math.sqrt(tau * T))
     K = (M + L * r) / r
     A = d**2 * M**2 * (1.0 + d**2 / (n * tau * epsilon**2))
     B = L * d**2 * M / epsilon
     xi = min(max((eta * A / K)**(1.0 / 3.0), (eta * B / K)**0.5), 0.9 * r)
-    return tau, float(xi), float(eta), float(C_tau)
+    return tau, float(xi), float(eta), C_tau
+
+
+def fixed_block_optimized_eta_params_convex(
+    *, T: int, d: int, n: int, epsilon: float, r: float,
+    C_norm: float, P: Array, L: float, M: float,
+) -> Tuple[int, float, float, float]:
+    """Second Sec. IV-A comparison: fix tau, then rebalance xi and eta."""
+    tau, C_tau = _fixed_block_size(
+        T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, P=P, L=L, M=M,
+    )
+    xi, eta = _optimized_xi_eta_at_tau(
+        T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, L=L, M=M, tau=tau,
+    )
+    return tau, xi, eta, C_tau
 
 
 # ============================================================
@@ -424,6 +451,7 @@ def run_ptf_pbd02_linear_regression_corollary1(
         "refined": corollary1_params,
         "legacy": corollary1_params_legacy,
         "fixed_block": fixed_block_params_convex,
+        "fixed_block_optimized_eta": fixed_block_optimized_eta_params_convex,
     }
     if tuning not in tuning_fns:
         raise ValueError(f"Unsupported parameter selection: {tuning}")

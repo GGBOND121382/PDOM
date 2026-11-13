@@ -21,6 +21,8 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_T_VALUES = "1000,3000,10000,30000,100000,300000,1000000"
 DEFAULT_EPS_VALUES = "0.1,1,10"
 DEFAULT_EXPERIMENTS = "impact_epsilon_and_T,impact_topology"
+FIXED_BLOCK_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_fixed_block"
+OPTIMIZED_ETA_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_fixed_block_optimized_eta"
 
 
 def _run(label: str, command: Sequence[str], *, dry_run: bool) -> None:
@@ -49,22 +51,25 @@ def main() -> None:
     )
     parser.add_argument(
         "--output-dir",
-        default=str(ROOT / "adv_setting" / "experiment_results_R1-2_fixed_block"),
+        default=None,
         help="Output directory. Keep it unchanged when resuming an interrupted run.",
     )
     parser.add_argument("--runs", type=int, default=10, help="Independent runs per setting (default: 10).")
     parser.add_argument("--base-seed", type=int, default=20261109, help="Keep fixed when resuming.")
     parser.add_argument("--tuning", choices=("refined", "legacy"), default="refined")
-    parser.add_argument("--t-values", default=DEFAULT_T_VALUES)
-    parser.add_argument("--eps-values", default=DEFAULT_EPS_VALUES)
-    parser.add_argument("--experiments", default=DEFAULT_EXPERIMENTS)
+    parser.add_argument("--t-values")
+    parser.add_argument("--eps-values")
+    parser.add_argument("--experiments")
+    parser.add_argument("--fixed-block-optimized-eta", action="store_true",
+                        help="Run only the paired R1-2 convex grid supplement (40 runs by default).")
+    parser.add_argument("--baseline-csv", help="Original convex runs CSV for paired optimized-eta runs.")
     parser.add_argument("--dry-run", action="store_true", help="Print all stages without executing them.")
     args = parser.parse_args()
 
     if args.runs <= 0:
         parser.error("--runs must be a positive integer")
 
-    experiments = [x.strip() for x in args.experiments.split(",") if x.strip()]
+    experiments = [x.strip() for x in (args.experiments or DEFAULT_EXPERIMENTS).split(",") if x.strip()]
     supported = {"impact_epsilon_and_T", "impact_topology"}
     if not experiments or set(experiments) - supported:
         parser.error(f"--experiments must contain only: {', '.join(sorted(supported))}")
@@ -72,7 +77,8 @@ def main() -> None:
     dataset = Path(args.dataset).expanduser()
     if not dataset.is_absolute():
         dataset = (Path.cwd() / dataset).resolve()
-    output_dir = Path(args.output_dir).expanduser()
+    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else FIXED_BLOCK_DIR
+    output_dir = Path(args.output_dir or default_output).expanduser()
     if not output_dir.is_absolute():
         output_dir = (ROOT / output_dir).resolve()
 
@@ -83,13 +89,30 @@ def main() -> None:
             "or pass --dataset <path>."
         )
 
+    if args.fixed_block_optimized_eta:
+        if args.tuning != "refined" or (args.experiments is not None and experiments != ["impact_epsilon_and_T"]):
+            parser.error("The paired supplement only supports refined tuning and impact_epsilon_and_T.")
+        baseline = Path(args.baseline_csv or
+                        (FIXED_BLOCK_DIR / "impact_epsilon_and_T_alpha0_runs.csv")).expanduser().resolve()
+        _run("R1-2: Paired convex fixed-block optimized-eta supplement", [
+            sys.executable, "-m", "adv_setting.run_fixed_block_optimized_eta",
+            "--dataset", str(dataset), "--baseline-csv", str(baseline),
+            "--output-dir", str(output_dir), "--runs", str(args.runs),
+            "--base-seed", str(args.base_seed),
+            "--t-values", args.t_values or "10000,100000",
+            "--eps-values", args.eps_values or "1,10",
+        ], dry_run=args.dry_run)
+        return
+    if args.baseline_csv is not None:
+        parser.error("--baseline-csv is only used with --fixed-block-optimized-eta.")
+
     experiment_list = ",".join(experiments)
     common = [
         "--output_dir", str(output_dir),
         "--runs", str(args.runs),
         "--base_seed", str(args.base_seed),
-        "--t_values", args.t_values,
-        "--eps_values", args.eps_values,
+        "--t_values", args.t_values or DEFAULT_T_VALUES,
+        "--eps_values", args.eps_values or DEFAULT_EPS_VALUES,
         "--experiments", experiment_list,
     ]
 
@@ -121,8 +144,8 @@ def main() -> None:
     print(f"  Runs/setting  : {args.runs}", flush=True)
     print(f"  Base seed     : {args.base_seed}", flush=True)
     print(f"  Tuning        : {args.tuning}", flush=True)
-    print(f"  T values      : {args.t_values}", flush=True)
-    print(f"  Epsilon values: {args.eps_values}", flush=True)
+    print(f"  T values      : {args.t_values or DEFAULT_T_VALUES}", flush=True)
+    print(f"  Epsilon values: {args.eps_values or DEFAULT_EPS_VALUES}", flush=True)
     print(f"  Experiments   : {experiment_list}", flush=True)
     print("  Fixed-block   : ENABLED (R1-2)", flush=True)
 

@@ -10,7 +10,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
 
-from loop_PTF_PBDOO_LR import fixed_block_params_convex
+from loop_PTF_PBDOO_LR import (
+    corollary1_params,
+    fixed_block_optimized_eta_params_convex,
+    fixed_block_params_convex,
+)
 from loop_PTF_PDOCO_LR_strong import fixed_block_params_strong
 from validate_r1_9_runs import expected_keys
 import adv_setting_common as C
@@ -44,6 +48,29 @@ class FixedBlockComparisonTests(unittest.TestCase):
                       /(p['alpha']*p['epsilon']*(p['M']+p['L']*p['r'])*p['T']))
         self.assertAlmostEqual(xi, min(max(B, P), 0.9*p['r']))
 
+    def test_convex_optimized_eta_rebalances_at_the_fixed_tau(self):
+        for epsilon in (0.5, 1e-5):
+            p = dict(self.params, epsilon=epsilon)
+            tau, xi, eta, Ctau = fixed_block_optimized_eta_params_convex(**p)
+            self.assertEqual(tau, math.ceil(Ctau))
+            old_tau, _, old_eta, old_Ctau = fixed_block_params_convex(**p)
+            self.assertEqual((tau, Ctau), (old_tau, old_Ctau))
+            K = p["M"] / p["r"] + p["L"]
+            A = p["d"]**2 * p["M"]**2 * (1 + p["d"]**2 / (p["n"] * tau * epsilon**2))
+            B = p["L"] * p["d"]**2 * p["M"] / epsilon
+            F = p["C_norm"]**2 / (p["T"] * K**2)
+            uncapped = max((F * A)**0.25, (F * B)**(1/3))
+            self.assertEqual(uncapped > 0.9 * p["r"], epsilon == 1e-5)
+            self.assertAlmostEqual(xi, min(uncapped, 0.9 * p["r"]))
+            self.assertAlmostEqual(eta, p["C_norm"] / math.sqrt(
+                p["T"] * (A / xi**2 + B / xi + tau * p["L"]**2)
+            ))
+            self.assertLess(eta, old_eta)
+
+    def test_convex_schedules_agree_when_corollary_uses_the_fixed_tau(self):
+        p = dict(self.params, epsilon=1e5)
+        self.assertEqual(corollary1_params(**p), fixed_block_optimized_eta_params_convex(**p))
+
     def test_existing_three_unchanged_optional_fourth_in_validation(self):
         original = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0])
         added = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0], include_fixed_block=True)
@@ -56,6 +83,8 @@ class FixedBlockComparisonTests(unittest.TestCase):
     def test_floor_rejects_too_short_horizon(self):
         with self.assertRaisesRegex(ValueError, 'ceil\\(C_tau\\) <= T'):
             fixed_block_params_convex(**dict(self.params, T=1))
+        with self.assertRaisesRegex(ValueError, 'ceil\\(C_tau\\) <= T'):
+            fixed_block_optimized_eta_params_convex(**dict(self.params, T=1))
         with self.assertRaisesRegex(ValueError, 'ceil\\(C_tau\\) <= T'):
             fixed_block_params_strong(**dict(self.params, T=2, alpha=1.0))
 

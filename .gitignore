@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 .ipynb_checkpoints/
 .DS_Store
+/adv_setting/experiment_results_R1-2_fixed_block_optimized_eta/
