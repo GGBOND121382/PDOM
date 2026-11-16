@@ -60,6 +60,7 @@ def main() -> None:
     )
     ap.add_argument("--eps_values", type=str, default="0.1,1.0,10.0", help="Comma-separated eps values.")
     ap.add_argument("--skip_migration", action="store_true", help="Skip migrating legacy CSVs.")
+    ap.add_argument("--reuse_unaffected_from", type=Path, help="Copy only unchanged algorithms' run rows from a prior result directory.")
     ap.add_argument("--include_fixed_block", action="store_true", help="Include the R1-2 fixed-block-size baseline in each experiment.")
     ap.add_argument("--include_fixed_block_optimized_eta", action="store_true",
                     help="Also include the second Sec. IV-A fixed-block choice in convex experiments.")
@@ -82,6 +83,9 @@ def main() -> None:
         output_dir = Path(__file__).resolve().parent / ("experiment_results_R1-9_" + args.tuning)
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    if args.reuse_unaffected_from is not None:
+        if not args.reuse_unaffected_from.is_dir() or args.reuse_unaffected_from.resolve() == output_dir.resolve():
+            ap.error("--reuse_unaffected_from must be an existing directory distinct from --output_dir.")
     if not args.skip_migration:
         C.migrate_legacy_csvs(output_dir)
 
@@ -126,6 +130,7 @@ def main() -> None:
                 X=X,
                 y=y,
                 output_dir=output_dir,
+                reuse_unaffected_from=args.reuse_unaffected_from,
             )
 
     # ----------------------------
@@ -148,6 +153,7 @@ def main() -> None:
                 X=X,
                 y=y,
                 output_dir=output_dir,
+                reuse_unaffected_from=args.reuse_unaffected_from,
             )
 
     # ----------------------------
@@ -171,6 +177,7 @@ def main() -> None:
                 X=X,
                 y=y,
                 output_dir=output_dir,
+                reuse_unaffected_from=args.reuse_unaffected_from,
             )
 
 if __name__ == "__main__":

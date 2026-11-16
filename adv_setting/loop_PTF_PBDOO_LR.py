@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 PTF-PBDO^2 (Algorithm 1, convex) with Theorem 1 + Corollary 1 parameters
-- Fixes the two common "OCR/typo" mismatches:
-  (1) C_tau uses  sqrt(2) * ln(sqrt(14 n))  (NOT sqrt(2 ln(sqrt(14 n))))
-  (2) accelerated-consensus theta uses 1/(1 + sqrt(1 - sigma2(P))) (NOT sigma2(P)^2)
+The consensus coefficient and the FTRL projection follow Algorithm 1:
+theta = 1/(1 + sqrt(1 - sigma**2)) for sigma = sigma_2(P), and
+x = Proj_{C_xi}(-(eta/2) * z).
 
 This script computes average regret online (without storing the full action
 history) via StreamingAvgLossRegretAccumulator, fed through the config's
@@ -285,7 +285,7 @@ def run_ptf_pbd02_convex(
       - DP noise at end of batch:
             b ~ Lap^d( 2 d^{3/2} M / (epsilon * xi) )
       - FTRL update:
-            x = Proj_{C_xi}( -eta * z )
+            x = Proj_{C_xi}( -(eta/2) * z )
 
     Note: if cfg.store_actions=True, we store played actions (x_tilde) as:
       actions[t] = x_tilde  with shape (T,n,d)
@@ -308,9 +308,8 @@ def run_ptf_pbd02_convex(
     proj = proj_C if proj_C is not None else l2_ball_projection
     R_xi = (1.0 - xi / r) * cfg.R
 
-    sig2 = float(sigma2_of_gossip(cfg.P))
-    # FIX #2: theta = 1/(1 + sqrt(1 - sigma2(P)))
-    theta = 1.0 / (1.0 + math.sqrt(max(1e-12, 1.0 - sig2)))
+    sigma = float(sigma2_of_gossip(cfg.P))
+    theta = 1.0 / (1.0 + math.sqrt(max(0.0, 1.0 - sigma**2)))
 
     rng = cfg.rng if cfg.rng is not None else np.random.default_rng(cfg.seed)
 
@@ -377,7 +376,7 @@ def run_ptf_pbd02_convex(
             z_tau_minus_1 = z_km1
         z_batches[z] = z_vec
 
-        x = proj(-cfg.eta * z_vec, R_xi)
+        x = proj(-(cfg.eta / 2.0) * z_vec, R_xi)
         x_batches[z] = x
 
         g_prev = g_curr
@@ -388,7 +387,7 @@ def run_ptf_pbd02_convex(
         "g_batches": g_batches,
         "x_final": x,
         "theta": float(theta),
-        "sigma2": float(sig2),
+        "sigma2": sigma,
         "laplace_scale": float(lap_scale),
         "tau": int(tau),
         "xi": float(xi),

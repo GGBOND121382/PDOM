@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import math
+from tempfile import TemporaryDirectory
 import unittest
 import sys
 from pathlib import Path
@@ -11,9 +12,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import numpy as np
 
 from loop_PTF_PBDOO_LR import (
+    PTF_PBDO2_Convex_Config,
     corollary1_params,
     fixed_block_optimized_eta_params_convex,
     fixed_block_params_convex,
+    run_ptf_pbd02_convex,
 )
 from loop_PTF_PDOCO_LR_strong import fixed_block_params_strong
 from validate_r1_9_runs import expected_keys
@@ -71,6 +74,52 @@ class FixedBlockComparisonTests(unittest.TestCase):
         p = dict(self.params, epsilon=1e5)
         self.assertEqual(corollary1_params(**p), fixed_block_optimized_eta_params_convex(**p))
 
+    def test_algorithm1_mixing_and_ftrl_projection(self):
+        P = 0.5 * np.eye(4) + 0.5 * self.P
+        cfg = PTF_PBDO2_Convex_Config(n=4, d=2, T=8, tau=2, eta=0.01,
+                                      xi=0.2, epsilon=1., M=1., P=P, R=10.)
+        res = run_ptf_pbd02_convex(lambda t, i, x: 1., cfg)
+        self.assertAlmostEqual(res["sigma2"], 0.5)
+        self.assertAlmostEqual(res["theta"], 1 / (1 + math.sqrt(1 - 0.5**2)))
+        self.assertGreater(np.linalg.norm(res["z_batches"]), 0)
+        from optimization_utils.adv_setting_utils import l2_ball_projection
+        expected = l2_ball_projection(-cfg.eta * res["z_batches"] / 2, 9.8)
+        np.testing.assert_allclose(res["x_batches"], expected)
+
+    def test_only_unaffected_runs_are_reused(self):
+        with TemporaryDirectory() as root:
+            source, target = Path(root) / "old", Path(root) / "new"
+            experiment = "impact_epsilon_and_T"
+            t, n, eps, topo = 1000, 9, 1.0, "grid"
+            ftrl = next(a for a in C.ALGORITHMS_ALPHA0 if a.name == "PTF-PBDOO-cor1")
+            source_rows = [
+                dict(experiment=experiment, algorithm=alg, alpha_reg=0, run=0,
+                     seed=C.deterministic_seed(9, C.make_run_key(
+                         experiment=experiment, algorithm=alg, alpha_reg=0, T=t,
+                         epsilon=eps, num_nodes=n, topology=topo), 0),
+                     T=t, epsilon=eps, num_nodes=n, topology=topo,
+                     avg_regret_per_round=10., avg_loss_per_round=11., mse=12.)
+                for alg in ("unaffected", ftrl.name)
+            ]
+            filename = f"{experiment}_alpha0_runs.csv"
+            C.write_csv(source / filename, source_rows)
+            def skip(*args, **kwargs):
+                self.fail("unaffected old row was not reused")
+            def run(*args, **kwargs):
+                return 1., 2., 3.
+            specs = [C.AlgorithmSpec("unaffected", skip, True, 0.),
+                     C.AlgorithmSpec(ftrl.name, run, True, 0.)]
+            args = dict(name=experiment, settings=[dict(T=t, epsilon=eps, num_nodes=n, topology=topo)],
+                        algorithms=specs, alpha_label="alpha0", runs=1,
+                        base_seed=9, X=np.zeros((1, 1)), y=np.zeros(1))
+            with self.assertRaisesRegex(ValueError, "Old convex FTRL"):
+                C.run_experiment(**args, output_dir=source)
+            C.run_experiment(**args, output_dir=target, reuse_unaffected_from=source)
+            a, b = C.read_csv(target / filename)
+            self.assertEqual(float(a["avg_regret_per_round"]), 10.)
+            self.assertEqual(float(b["avg_regret_per_round"]), 1.)
+            self.assertEqual(b["implementation"], C.CONVEX_FTRL_REVISION)
+            self.assertEqual(len(C.read_csv(source / filename)), 2)
     def test_existing_three_unchanged_optional_fourth_in_validation(self):
         original = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0])
         added = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0], include_fixed_block=True)

@@ -33,9 +33,17 @@ If the exact dataset file is placed at `data/adv_setting/bodyfat` under the repo
 python run_experiments.py
 ```
 
-Defaults are 10 independent runs, base seed `20261109`, `tuning=refined`, the seven manuscript horizons, epsilon values `0.1,1,10`, and the two experiments `impact_epsilon_and_T,impact_topology`. The default output directory is `adv_setting/experiment_results_R1-2_fixed_block`.
+Defaults are 10 independent runs, base seed `20261109`, `tuning=refined`, the seven manuscript horizons, epsilon values `0.1,1,10`, and the two experiments `impact_epsilon_and_T,impact_topology`. The default output directory is `adv_setting/experiment_results_R1-2_paper_alg1`.
 
-To resume an interrupted run, repeat the **same command**, keeping the output directory, dataset, tuning, and base seed unchanged. Existing completed rows from the original refined experiment are reused. With all original rows present, the default sweep adds only 420 runs (42 convex settings × 10). Missing original rows are also run if the directory is incomplete. The wrapper validates exact coverage before plotting.
+Algorithm 1 now uses `theta = 1/(1+sqrt(1-sigma**2))` with `sigma = sigma_2(P)` and projects `-eta*z/2`. This changes only the proposed convex FTRL algorithm and its two fixed-block variants. Their rows record `implementation=paper-alg1-v1`, and the runner rejects old FTRL checkpoints. Strongly convex runs, BDOO and PBDOO are unchanged.
+
+If you have a complete earlier refined result directory with the same dataset, settings and seed, reuse only unchanged algorithms:
+
+```bash
+python run_experiments.py --reuse-unaffected-from /path/to/old/result_directory
+```
+
+That runs 1,260 convex FTRL trials (42 settings × 3 variants × 10) and carries over valid unaffected rows. Missing unaffected rows are run too. The source directory is never modified. To resume, repeat the same command with the same output directory, dataset, tuning and base seed. The wrapper validates exact coverage before plotting.
 
 To rerun every algorithm from scratch without modifying any original output:
 
@@ -63,13 +71,13 @@ the existing CSVs and figures are unchanged.
 
 The pilot runs the 9-learner grid with `T = 10000,100000`,
 `epsilon = 1,10`, and 10 runs per setting. It reuses the seed from each
-matching row of `adv_setting/experiment_results_R1-2_fixed_block/impact_epsilon_and_T_alpha0_runs.csv`.
+matching row of `adv_setting/experiment_results_R1-2_paper_alg1/impact_epsilon_and_T_alpha0_runs.csv`.
 Because block size is unchanged, the paired runs use the same sample
 indices and perturbation draws, with Laplace draws scaled for the new
-`xi`. Pass `--baseline-csv` for another copy of the original run CSV and
+`xi`. Pass `--baseline-csv` for another copy of the corrected run CSV and
 `--dataset` if the data are not in the repository's default location.
 
-The separate output directory `adv_setting/experiment_results_R1-2_fixed_block_optimized_eta`
+The separate output directory `adv_setting/experiment_results_R1-2_paper_alg1_paired`
 contains the per-run parameters, paired regrets, and a summary of
 `regret_delta = optimized - original` (negative is better). Repeat
 the same command with the same dataset and baseline CSV to resume.
@@ -87,21 +95,21 @@ From repository root, after providing the same Bodyfat dataset as in R1-9:
 python adv_setting/run_adv_setting_experiments.py \
   --include_fixed_block --include_fixed_block_optimized_eta --runs 10 --base_seed 20261109 \
   --tuning refined --dataset /absolute/path/to/bodyfat_scale \
-  --output_dir adv_setting/experiment_results_R1-2_fixed_block \
+  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
   --experiments impact_epsilon_and_T,impact_topology \
   --t_values 1000,3000,10000,30000,100000,300000,1000000 \
   --eps_values 0.1,1,10 --skip_migration
 
 python adv_setting/validate_r1_9_runs.py \
   --include_fixed_block --include_fixed_block_optimized_eta \
-  --output_dir adv_setting/experiment_results_R1-2_fixed_block \
+  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
   --runs 10 --base_seed 20261109 \
   --experiments impact_epsilon_and_T,impact_topology \
   --t_values 1000,3000,10000,30000,100000,300000,1000000 \
   --eps_values 0.1,1,10
 
 python adv_setting/plot_adv_setting_results.py \
-  --output_dir adv_setting/experiment_results_R1-2_fixed_block \
+  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
   --recompute_summary --require_runs 10 \
   --experiments impact_epsilon_and_T,impact_topology
 ```

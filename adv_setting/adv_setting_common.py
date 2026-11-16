@@ -258,6 +258,16 @@ ALGORITHMS_ALPHA1: List[AlgorithmSpec] = [
     AlgorithmSpec(name="PTF-PBDOO-strong", runner=_run_ptf_pbd02_strong, uses_epsilon=True, alpha_reg=1.0),
 ]
 
+CONVEX_FTRL_ALGORITHMS = frozenset((
+    "PTF-PBDOO-cor1", FIXED_BLOCK_ALPHA0.name, FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name,
+))
+CONVEX_FTRL_REVISION = "paper-alg1-v1"
+
+def validate_convex_revision(row: Dict[str, object]) -> None:
+    if (row.get("algorithm") in CONVEX_FTRL_ALGORITHMS
+            and row.get("implementation") != CONVEX_FTRL_REVISION):
+        raise ValueError("Old convex FTRL results use a different update. Use a fresh output directory "
+                         "and optionally --reuse-unaffected-from to carry over other algorithms.")
 
 # ============================================================
 # CSV utilities
@@ -428,6 +438,11 @@ def validate_run_rows(
     global_seeds: Dict[str, Tuple[str, ...]] = {}
 
     for row in rows:
+        try:
+            validate_convex_revision(row)
+        except ValueError as exc:
+            errors.append(str(exc))
+            break
         key = row_key(row, RUN_KEY_FIELDS)
         groups.setdefault(key, []).append(row)
 
@@ -584,6 +599,7 @@ def run_experiment(
     X: np.ndarray,
     y: np.ndarray,
     output_dir: Path,
+    reuse_unaffected_from: Optional[Path] = None,
 ) -> Tuple[Path, Path]:
     if runs <= 0:
         raise ValueError(f"runs must be positive; got {runs}")
@@ -619,6 +635,7 @@ def run_experiment(
     # append-only files, duplicate historical BDOO rows, changed base seeds,
     # and accidental reuse of one seed across settings.
     for row in existing_runs_str:
+        validate_convex_revision(row)
         key = row_key(row, RUN_KEY_FIELDS)
         if key not in requested_keys:
             raise ValueError(
@@ -649,6 +666,35 @@ def run_experiment(
             raise ValueError(f"Seed {seed} is reused by settings {previous_key} and {key}")
         global_seed_owner[seed] = key
         per_key[run_id] = row
+
+    if reuse_unaffected_from is not None:
+        carried = 0
+        for row in read_csv(reuse_unaffected_from / runs_path.name):
+            key = row_key(row, RUN_KEY_FIELDS)
+            if key not in requested_keys or key[1] in CONVEX_FTRL_ALGORITHMS:
+                continue
+            run_id = _parse_exact_int(row.get("run", ""))
+            if not 0 <= run_id < runs:
+                continue
+            seed = _parse_exact_int(row.get("seed", ""))
+            if seed != deterministic_seed(base_seed, key, run_id):
+                raise ValueError(f"Seed mismatch in reuse source for {key}, run={run_id}.")
+            per_key = existing_by_key.setdefault(key, {})
+            if run_id in per_key:
+                continue
+            if seed in global_seed_owner and global_seed_owner[seed] != key:
+                raise ValueError(f"Seed collision in reuse source for {key}, run={run_id}.")
+            if not all(math.isfinite(float(row[field])) for field in (
+                "avg_regret_per_round", "avg_loss_per_round", "mse",
+            )):
+                raise ValueError(f"Non-finite reuse source metric for {key}, run={run_id}.")
+            per_key[run_id] = row
+            global_seed_owner[seed] = key
+            all_runs.append(row)
+            carried += 1
+        if carried:
+            write_csv(runs_path, all_runs, preferred_fieldnames=RUN_COLUMNS)
+            print(f"[reuse] {runs_path.name}: {carried} unaffected runs", flush=True)
 
     processed_nonprivate_keys = set()
 
@@ -731,6 +777,8 @@ def run_experiment(
                     "avg_loss_per_round": float(avg_loss),
                     "mse": float(mse),
                 }
+                if alg.name in CONVEX_FTRL_ALGORITHMS:
+                    row["implementation"] = CONVEX_FTRL_REVISION
                 all_runs.append(row)
                 existing_for_key[run_id] = row
                 global_seed_owner[seed] = key

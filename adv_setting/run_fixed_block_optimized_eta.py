@@ -52,6 +52,7 @@ def run_paired(dataset: Path, baseline_csv: Path, output_dir: Path, *,
         key = C.row_key(row, PAIR_FIELDS)
         old = baseline.get(key)
         if (old is None or key in completed or row["algorithm"] != ALGORITHM
+                or row.get("implementation") != C.CONVEX_FTRL_REVISION
                 or int(row["seed"]) != int(old["seed"])
                 or float(row["fixed_block_avg_regret_per_round"]) != float(old["avg_regret_per_round"])
                 or not all(math.isfinite(float(row[f])) for f in (
@@ -77,6 +78,7 @@ def run_paired(dataset: Path, baseline_csv: Path, output_dir: Path, *,
             raise ValueError(f"Non-finite metric at T={t}, epsilon={e}, run={i}.")
         old_regret = float(old["avg_regret_per_round"])
         rows.append(dict(experiment=EXPERIMENT, algorithm=ALGORITHM, alpha_reg=0,
+                         implementation=C.CONVEX_FTRL_REVISION,
                          run=int(i), seed=seed, T=int(t), epsilon=float(e), num_nodes=9,
                          topology="grid", avg_regret_per_round=regret, avg_loss_per_round=loss,
                          mse=mse, tau=res["tau"], xi=res["xi"], eta=res["eta"],

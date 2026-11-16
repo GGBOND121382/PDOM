@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_T_VALUES = "1000,3000,10000,30000,100000,300000,1000000"
 DEFAULT_EPS_VALUES = "0.1,1,10"
 DEFAULT_EXPERIMENTS = "impact_epsilon_and_T,impact_topology"
-FIXED_BLOCK_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_fixed_block"
-OPTIMIZED_ETA_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_fixed_block_optimized_eta"
+PAPER_ALG1_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_paper_alg1"
+OPTIMIZED_ETA_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_paper_alg1_paired"
 
 
 def _run(label: str, command: Sequence[str], *, dry_run: bool) -> None:
@@ -62,7 +62,9 @@ def main() -> None:
     parser.add_argument("--experiments")
     parser.add_argument("--fixed-block-optimized-eta", action="store_true",
                         help="Run only the earlier paired convex grid pilot instead of the full pipeline.")
-    parser.add_argument("--baseline-csv", help="Original convex runs CSV for paired optimized-eta runs.")
+    parser.add_argument("--baseline-csv", help="Corrected convex runs CSV for paired optimized-eta runs.")
+    parser.add_argument("--reuse-unaffected-from",
+                        help="Prior results directory. Reuse unchanged algorithms only and rerun all convex FTRL variants.")
     parser.add_argument("--dry-run", action="store_true", help="Print all stages without executing them.")
     args = parser.parse_args()
 
@@ -77,7 +79,7 @@ def main() -> None:
     dataset = Path(args.dataset).expanduser()
     if not dataset.is_absolute():
         dataset = (Path.cwd() / dataset).resolve()
-    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else FIXED_BLOCK_DIR
+    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else PAPER_ALG1_DIR
     output_dir = Path(args.output_dir or default_output).expanduser()
     if not output_dir.is_absolute():
         output_dir = (ROOT / output_dir).resolve()
@@ -90,10 +92,12 @@ def main() -> None:
         )
 
     if args.fixed_block_optimized_eta:
+        if args.reuse_unaffected_from is not None:
+            parser.error("--reuse-unaffected-from is only available for the full pipeline.")
         if args.tuning != "refined" or (args.experiments is not None and experiments != ["impact_epsilon_and_T"]):
             parser.error("The paired supplement only supports refined tuning and impact_epsilon_and_T.")
         baseline = Path(args.baseline_csv or
-                        (FIXED_BLOCK_DIR / "impact_epsilon_and_T_alpha0_runs.csv")).expanduser().resolve()
+                        (PAPER_ALG1_DIR / "impact_epsilon_and_T_alpha0_runs.csv")).expanduser().resolve()
         _run("R1-2: Paired convex fixed-block optimized-eta supplement", [
             sys.executable, "-m", "adv_setting.run_fixed_block_optimized_eta",
             "--dataset", str(dataset), "--baseline-csv", str(baseline),
@@ -120,12 +124,18 @@ def main() -> None:
     fixed_block_flags = ["--include_fixed_block"]
     if args.tuning == "refined":
         fixed_block_flags.append("--include_fixed_block_optimized_eta")
+    reuse_flags = []
+    if args.reuse_unaffected_from is not None:
+        if args.tuning != "refined":
+            parser.error("--reuse-unaffected-from requires refined tuning and matching prior settings.")
+        reuse_flags = ["--reuse_unaffected_from", str(Path(args.reuse_unaffected_from).expanduser().resolve())]
     run_cmd = [
         python, str(ROOT / "adv_setting" / "run_adv_setting_experiments.py"),
         *common,
         "--dataset", str(dataset),
         "--tuning", args.tuning,
         *fixed_block_flags,
+        *reuse_flags,
         "--skip_migration",
     ]
     validate_cmd = [
