@@ -1,122 +1,72 @@
-# R1-2 fixed-block-size comparison baseline
+# R1-2 Vanilla-block baseline
 
-The default refined pipeline includes both R1-2 fixed-block choices for convex losses and one for strongly convex losses. The original algorithms and Corollary 1/2 settings remain unchanged.
+The final experiment pipeline uses **one Vanilla-block baseline per convexity regime**. It removes the weaker convex comparison that fixed both the block size and the prescribed step size. The proposed algorithms, Corollary 1/2 parameter formulas, and the strong-convex comparison are unchanged.
 
-## Exactly which choice is implemented
+## Exact baseline definition
 
-* **Convex (PB²D-FTRL)**: the **first** Fixed-block-size comparison in `paper/design.tex` Sec. IV-A and `response/response1.tex` R1-2. It fixes `tau = ceil(C_tau)` and `eta = R / (L sqrt(tau T))` as cited there. The exploration radius balances the two `xi`-dependent terms of Theorem 1 under this fixed `eta`, then follows the existing R1-3 `0.9r` feasibility cap.
-* **Convex (PB²D-FTRL, optimized eta)**: the **second** Sec. IV-A comparison. It fixes the same block size, uses the Corollary 1 balancing rule for `xi` at that block size, applies the same cap, then computes the corresponding `eta`. This is not a step-size sweep.
-* **Strongly convex (PB²D-FTAL)**: Fixed-block-size comparison in Sec. IV-B: `tau = ceil(C_tau)`, and `xi` chosen via Theorem 2/Corollary 2's two balancing expressions evaluated at this fixed block size, with the same `0.9r` safeguard.
-* All fixed-block variants reuse the corresponding proposed algorithm core, DP perturbation, and accelerated mixing. Only parameter selection differs.
+- **Convex PB²D-FTRL:** fix \(\tau=\lceil C_\tau\rceil\); choose \(\xi\) using the Corollary 1 balancing expressions evaluated at this fixed block size; apply the same \(0.9r\) feasibility safeguard; then compute \(\eta\) from the corresponding Theorem 1 bound. This is the former optimized-eta fixed-block variant. It is the only convex Vanilla-block baseline in the final paper.
+- **Strongly convex PB²D-FTAL:** fix \(\tau=\lceil C_\tau\rceil\); choose \(\xi\) using the two Theorem 2/Corollary 2 balancing expressions at this fixed block size, with the same \(0.9r\) safeguard.
+- The Vanilla-block baselines use the same algorithm core, accelerated mixing, and DP perturbation as the corresponding proposed methods. Only the block-size selection differs.
+- The earlier convex variant with \(\eta=R/(L\sqrt{\tau T})\) is superseded. Its old run rows are excluded from final validation, summaries, and figures. If found in the selected output directory, they are preserved in a separate `*_obsolete_weak_fixed_block_runs.csv` archive.
 
-Note: the manuscript presents **order bounds**, not a unique finite-constant formula for the convex fixed-block `xi`. The implementation uses the standard max of the two balancing expressions directly obtained from the displayed Theorem 1 bound; no statistical tuning or added heuristic is used. The exact expressions are in `fixed_block_params_convex` and `fixed_block_params_strong` and tested in `test_r1_2_fixed_block.py`.
+The internal CSV identifier for the convex Vanilla-block curve remains `PTF-PBDOO-fixed-block-optimized-eta-cor1` so the already-corrected experiment results can be reused without changing their seed keys. Its figure/legend name is **Vanilla-block**.
 
-## One-click entry point (recommended)
+## One-command pipeline
 
-From the **repository root**, run the following single command. It executes the complete pipeline in order: experiment/resume, exact run-and-seed validation, summary recomputation, and figure generation. The R1-2 Fixed-block baseline is enabled automatically.
-
-Windows PowerShell:
+From the repository root:
 
 ```powershell
-python .\run_experiments.py --dataset "D:\datasets\bodyfat_scale"
+git switch dev
+git pull --ff-only origin dev
+python .\\run_experiments.py --dataset "D:\\datasets\\bodyfat_scale"
 ```
 
-Linux/macOS:
+If the exact LIBSVM `bodyfat_scale` file is already at `data/adv_setting/bodyfat`, omit `--dataset`.
 
-```bash
-python run_experiments.py --dataset /absolute/path/to/bodyfat_scale
+The default output directory is `adv_setting/experiment_results_R1-2_vanilla_block`. The pipeline runs/resumes experiments, validates exact run/seed coverage, recomputes summaries, and regenerates the four figures. It includes one Vanilla-block baseline in each convexity regime.
+
+## Reuse the latest corrected results (recommended)
+
+The corrected `experiment_results_R1-2_paper_alg1` sweep contains 3,500 rows because it includes the superseded weak convex fixed-step baseline. The final manuscript needs 3,080 rows: the same sweep minus those 420 obsolete rows.
+
+To build the final result directory without rerunning matching experiments, point the new pipeline at the old corrected result directory:
+
+```powershell
+python .\\run_experiments.py --dataset "D:\\datasets\\bodyfat_scale" --reuse-unaffected-from "D:\\path\\to\\experiment_results_R1-2_paper_alg1"
 ```
 
-If the exact dataset file is placed at `data/adv_setting/bodyfat` under the repository root, `--dataset` may be omitted:
+The runner reuses matching runs for the proposed convex FTRL and the final Vanilla-block baseline when they carry the current `paper-alg1-v1` implementation tag. It also reuses all matching unaffected algorithms and strongly-convex runs. It ignores the superseded weak baseline, checks seeds/settings/metrics, and writes the final 3,080-row result set to the new output directory. The source directory is not modified. If any required current result is missing or uses the old FTRL update, only that missing/invalid run is recomputed.
 
-```bash
-python run_experiments.py
-```
-
-Defaults are 10 independent runs, base seed `20261109`, `tuning=refined`, the seven manuscript horizons, epsilon values `0.1,1,10`, and the two experiments `impact_epsilon_and_T,impact_topology`. The default output directory is `adv_setting/experiment_results_R1-2_paper_alg1`.
-
-Algorithm 1 now uses `theta = 1/(1+sqrt(1-sigma**2))` with `sigma = sigma_2(P)` and projects `-eta*z/2`. This changes only the proposed convex FTRL algorithm and its two fixed-block variants. Their rows record `implementation=paper-alg1-v1`, and the runner rejects old FTRL checkpoints. Strongly convex runs, BDOO and PBDOO are unchanged.
-
-If you have a complete earlier refined result directory with the same dataset, settings and seed, reuse only unchanged algorithms:
-
-```bash
-python run_experiments.py --reuse-unaffected-from /path/to/old/result_directory
-```
-
-That runs 1,260 convex FTRL trials (42 settings × 3 variants × 10) and carries over valid unaffected rows. Missing unaffected rows are run too. The source directory is never modified. To resume, repeat the same command with the same output directory, dataset, tuning and base seed. The wrapper validates exact coverage before plotting.
-
-To rerun every algorithm from scratch without modifying any original output:
-
-```bash
-python run_experiments.py --output-dir adv_setting/experiment_results_R1-2_rerun
-```
-
-The default full sweep uses independently derived, deterministic seeds per algorithm, consistent with the original experiment pipeline. It does not load the paired pilot CSV. The new baseline is included at every convex setting in both figures. Strongly convex figures still have the same algorithms as before.
-
-For a small smoke test, override the settings, for example `--runs 1 --t-values 1000 --eps-values 1 --output-dir adv_setting/experiment_results_pilot`. Do not use pilot results in the manuscript.
-
-The old root-level runner is preserved as `run_legacy_experiments.py`; the previous `adv_setting/run_experiments.py` implementation is preserved as `adv_setting/run_experiments_legacy.py`. Both `python run_experiments.py` and `python adv_setting/run_experiments.py` now invoke the revised one-click pipeline.
-
-## Optional paired convex pilot
-
-```bash
-python run_experiments.py --fixed-block-optimized-eta
-```
-
-This runs only the **second** fixed-block comparison in Sec. IV-A: use
-`tau = ceil(C_tau)`, evaluate the Corollary 1 balancing formulas for
-`xi` at that block size, cap it at `0.9r`, and compute the corresponding
-`eta`. No empirical step-size sweep is used. Strongly convex runs and
-the existing CSVs and figures are unchanged.
-
-The pilot runs the 9-learner grid with `T = 10000,100000`,
-`epsilon = 1,10`, and 10 runs per setting. It reuses the seed from each
-matching row of `adv_setting/experiment_results_R1-2_paper_alg1/impact_epsilon_and_T_alpha0_runs.csv`.
-Because block size is unchanged, the paired runs use the same sample
-indices and perturbation draws, with Laplace draws scaled for the new
-`xi`. Pass `--baseline-csv` for another copy of the corrected run CSV and
-`--dataset` if the data are not in the repository's default location.
-
-The separate output directory `adv_setting/experiment_results_R1-2_paper_alg1_paired`
-contains the per-run parameters, paired regrets, and a summary of
-`regret_delta = optimized - original` (negative is better). Repeat
-the same command with the same dataset and baseline CSV to resume.
-Use a separate `--output-dir` for a different run configuration.
+Keep the dataset, `--runs`, `--base-seed`, tuning, T values, epsilon values, and experiment list identical to the source when reusing. The default settings are 10 runs, base seed `20261109`, seven horizons `1000,3000,10000,30000,100000,300000,1000000`, epsilon values `0.1,1,10`, and experiments `impact_epsilon_and_T,impact_topology`.
 
 ## Manual stages (optional)
 
-If you need to execute stages separately, the commands below remain available.
-
-## Run, validate and plot
-
-From repository root, after providing the same Bodyfat dataset as in R1-9:
-
 ```bash
-python adv_setting/run_adv_setting_experiments.py \
-  --include_fixed_block --include_fixed_block_optimized_eta --runs 10 --base_seed 20261109 \
-  --tuning refined --dataset /absolute/path/to/bodyfat_scale \
-  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
-  --experiments impact_epsilon_and_T,impact_topology \
-  --t_values 1000,3000,10000,30000,100000,300000,1000000 \
+python adv_setting/run_adv_setting_experiments.py \\
+  --include_vanilla_block --runs 10 --base_seed 20261109 \\
+  --tuning refined --dataset /absolute/path/to/bodyfat_scale \\
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
+  --experiments impact_epsilon_and_T,impact_topology \\
+  --t_values 1000,3000,10000,30000,100000,300000,1000000 \\
   --eps_values 0.1,1,10 --skip_migration
 
-python adv_setting/validate_r1_9_runs.py \
-  --include_fixed_block --include_fixed_block_optimized_eta \
-  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
-  --runs 10 --base_seed 20261109 \
-  --experiments impact_epsilon_and_T,impact_topology \
-  --t_values 1000,3000,10000,30000,100000,300000,1000000 \
+python adv_setting/validate_r1_9_runs.py \\
+  --include_vanilla_block \\
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
+  --runs 10 --base_seed 20261109 \\
+  --experiments impact_epsilon_and_T,impact_topology \\
+  --t_values 1000,3000,10000,30000,100000,300000,1000000 \\
   --eps_values 0.1,1,10
 
-python adv_setting/plot_adv_setting_results.py \
-  --output_dir adv_setting/experiment_results_R1-2_paper_alg1 \
-  --recompute_summary --require_runs 10 \
+python adv_setting/plot_adv_setting_results.py \\
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
+  --recompute_summary --require_runs 10 \\
   --experiments impact_epsilon_and_T,impact_topology
 ```
 
-The original fixed-block baseline is black dashed and the optimized-eta convex variant is purple dash-dot. Both curves are plotted with the proposed method using the same normalization and sample-standard-deviation error bars. Keep the same algorithm selection when resuming a directory that already contains optimized-eta rows.
+The final Vanilla-block curve is drawn as a black dashed line in both convex and strongly-convex figures. All figures use the same regret normalization and sample-standard-deviation error bars.
 
-## Tests (no real dataset required)
+## Tests
 
 ```bash
 python adv_setting/test_r1_9_pipeline.py
@@ -124,4 +74,6 @@ python adv_setting/test_r1_2_fixed_block.py
 python -m compileall -q adv_setting optimization_utils iid_setting
 ```
 
-The integration smoke test with a *temporary synthetic LIBSVM input* (not Bodyfat) completed `driver -> run CSV -> validation -> summary -> plot` for convex and strongly convex cases, including the baseline. The full Bodyfat experiments and revised paper figures have **not** been run in this package.
+The R1-2 tests cover the single-baseline setting coverage, the Corollary 1/2 parameter formulas, the Algorithm 1 mixing/projection update, reuse of already-correct convex FTRL rows, exclusion/archiving of the obsolete weak baseline, and rejection of incompatible old convex FTRL checkpoints.
+
+This code update does not run the Bodyfat sweep. Use the reuse command above to build the final result directory from the latest corrected results, then inspect the regenerated summaries and figures before updating the manuscript and response.

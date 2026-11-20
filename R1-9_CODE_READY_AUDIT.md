@@ -3,6 +3,7 @@
 ## Baseline and scope
 
 - Baseline: the user-supplied `PDOM_R1-9_experiment_source.zip`.
+- Current R1-2 experiment selection: one Vanilla-block baseline per convexity regime. The former convex fixed-step baseline is now treated as obsolete historical data.
 - Scope: experiment source code, run scheduling, stochastic-seed propagation, parameter evaluation, validation, plotting guards, and execution instructions.
 - Excluded by request: obtaining, validating, or modifying the Bodyfat dataset; running the final scientific sweep; editing the manuscript or response letter.
 
@@ -15,6 +16,7 @@
 5. **Validation did not cover all driver-supported settings or sufficiently protect plotting.** The validator now checks all three driver experiment families, exact run-ID coverage, per-setting and cross-setting seed uniqueness, deterministic seed consistency, finite metrics, and expected setting coverage. The plotter validates raw run records before producing figures.
 6. **CSV checkpoint writes could be interrupted mid-write.** CSV writes now use a temporary file, flush/fsync, and atomic replacement.
 7. Added a dependency file, an executable `unittest` regression suite, and code-specific reproduction instructions.
+8. **R1-2 baseline consolidation.** The active pipeline runs only the convex fixed-block baseline with optimized \(\xi,\eta\), plus the strongly-convex fixed-block baseline. Corrected current convex FTRL rows can be reused; the superseded weak convex baseline is excluded from active summaries/figures and archived separately if already present in the target directory.
 
 ## Metric-normalization clarification
 
@@ -43,3 +45,10 @@ The plotter's division by `num_learners` was reviewed and retained. The metric h
 - No manuscript/reply placeholders were removed.
 
 Therefore this is a **code-ready handoff**, not a completed R1-9 scientific revision. After the exact manuscript-cited `bodyfat_scale` file is supplied, run the documented 10-run command, validate, regenerate the figures, inspect the results, and update the manuscript and response letter from those actual results.
+
+
+## Follow-up for the R1-2 marked manuscript
+
+The final one-click runner expects exactly one Vanilla-block baseline per convexity regime. The prior corrected result bundle has 3,500 rows because it also contains 420 rows for the superseded convex fixed-step variant. The final active set is 3,080 rows. The updated reuse path retains matching current `paper-alg1-v1` convex FTRL runs and unaffected algorithms, while ignoring the obsolete variant. The source result directory is not modified.
+
+The baseline-consolidation code and tests were updated after the historical verification above. They have **not** been executed in this session; the historical test counts in this audit are not verification of the latest commit.

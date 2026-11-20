@@ -26,7 +26,7 @@ Previously, the wrappers used the experiment RNG for sample assignment but const
 - Changing `--base_seed`, changing the sweep, reusing an old append-only output directory, or encountering duplicate historical run IDs causes an explicit error rather than silently mixing incompatible results.
 - Epsilon-independent BDOO is recorded once per `(T, n, topology)` and reused across epsilon panels.
 
-Use a fresh output directory for this seed scheme. Do not reuse historical `experiment_results*` folders.
+Use a fresh output directory for a new result revision. The R1-2 one-click runner can reuse matching rows from the corrected `paper-alg1-v1` sweep, including current convex FTRL rows; it excludes the superseded weak convex fixed-step baseline and leaves the source directory untouched.
 
 ### 3. The `refined` schedule now follows the manuscript's Corollaries 1–2
 
@@ -37,6 +37,7 @@ The default `--tuning refined` directly implements the equations currently displ
 - `R` is passed as `C_norm`; it is not replaced by the feasible-set diameter.
 - The R1-3 exploration-radius feasibility safeguard `xi <= 0.9 r` is retained.
 - The algorithm implementations no longer silently cap `tau` at `T/3`. They accept the theorem's stated range `tau <= T` and reject `tau > T`.
+- The final R1-2 experiment set includes one Vanilla-block baseline per convexity regime. The convex baseline fixes `tau=ceil(C_tau)` and selects `xi,eta` using the Corollary 1/Theorem 1 bound; the strongly-convex baseline fixes the same block lower bound and selects `xi` using Corollary 2/Theorem 2. The superseded convex fixed-step variant is excluded from final figures and validation.
 
 `--tuning legacy` remains available only to reproduce the previous parameter schedule. It is not the default for the revised manuscript.
 
@@ -65,8 +66,9 @@ python adv_setting/run_adv_setting_experiments.py \
   --runs 10 \
   --base_seed 20261109 \
   --tuning refined \
+  --include_vanilla_block \
   --dataset /absolute/path/to/bodyfat_scale \
-  --output_dir adv_setting/experiment_results_R1-9_refined \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
   --experiments impact_epsilon_and_T,impact_topology \
   --t_values 1000,3000,10000,30000,100000,300000,1000000 \
   --eps_values 0.1,1,10 \
@@ -79,7 +81,8 @@ Validate all requested settings:
 
 ```bash
 python adv_setting/validate_r1_9_runs.py \
-  --output_dir adv_setting/experiment_results_R1-9_refined \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
+  --include_vanilla_block \
   --runs 10 \
   --base_seed 20261109 \
   --experiments impact_epsilon_and_T,impact_topology \
@@ -91,7 +94,7 @@ Only after validation succeeds, regenerate the figures:
 
 ```bash
 python adv_setting/plot_adv_setting_results.py \
-  --output_dir adv_setting/experiment_results_R1-9_refined \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
   --recompute_summary \
   --require_runs 10 \
   --experiments impact_epsilon_and_T,impact_topology
