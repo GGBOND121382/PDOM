@@ -80,7 +80,12 @@ def main() -> None:
     dataset = Path(args.dataset).expanduser()
     if not dataset.is_absolute():
         dataset = (Path.cwd() / dataset).resolve()
-    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else VANILLA_BLOCK_DIR
+    if args.fixed_block_optimized_eta:
+        default_output = OPTIMIZED_ETA_DIR
+    elif args.tuning == "refined":
+        default_output = VANILLA_BLOCK_DIR
+    else:
+        default_output = ROOT / "adv_setting" / "experiment_results_R1-9_legacy"
     output_dir = Path(args.output_dir or default_output).expanduser()
     if not output_dir.is_absolute():
         output_dir = (ROOT / output_dir).resolve()
