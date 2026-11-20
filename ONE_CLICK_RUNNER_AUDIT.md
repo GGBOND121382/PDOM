@@ -28,7 +28,7 @@ The wrapper uses `sys.executable`, stops on the first failed stage, and uses an 
 The previous corrected sweep has 3,500 rows because it also contains 420 superseded weak convex fixed-step rows. The final pipeline expects 3,080 active rows. Run:
 
 ```powershell
-python .\\run_experiments.py --dataset "D:\\datasets\\bodyfat_scale" --reuse-unaffected-from "D:\\path\\to\\experiment_results_R1-2_paper_alg1"
+python .\run_experiments.py --dataset "D:\datasets\bodyfat_scale" --reuse-unaffected-from "D:\path\to\experiment_results_R1-2_paper_alg1"
 ```
 
 The source directory remains unchanged. The new output directory is `adv_setting/experiment_results_R1-2_vanilla_block`.

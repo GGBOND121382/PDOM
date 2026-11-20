@@ -18,7 +18,7 @@ From the repository root:
 ```powershell
 git switch dev
 git pull --ff-only origin dev
-python .\\run_experiments.py --dataset "D:\\datasets\\bodyfat_scale"
+python .\run_experiments.py --dataset "D:\datasets\bodyfat_scale"
 ```
 
 If the exact LIBSVM `bodyfat_scale` file is already at `data/adv_setting/bodyfat`, omit `--dataset`.
@@ -32,7 +32,7 @@ The corrected `experiment_results_R1-2_paper_alg1` sweep contains 3,500 rows bec
 To build the final result directory without rerunning matching experiments, point the new pipeline at the old corrected result directory:
 
 ```powershell
-python .\\run_experiments.py --dataset "D:\\datasets\\bodyfat_scale" --reuse-unaffected-from "D:\\path\\to\\experiment_results_R1-2_paper_alg1"
+python .\run_experiments.py --dataset "D:\datasets\bodyfat_scale" --reuse-unaffected-from "D:\path\to\experiment_results_R1-2_paper_alg1"
 ```
 
 The runner reuses matching runs for the proposed convex FTRL and the final Vanilla-block baseline when they carry the current `paper-alg1-v1` implementation tag. It also reuses all matching unaffected algorithms and strongly-convex runs. It ignores the superseded weak baseline, checks seeds/settings/metrics, and writes the final 3,080-row result set to the new output directory. The source directory is not modified. If any required current result is missing or uses the old FTRL update, only that missing/invalid run is recomputed.
@@ -42,25 +42,25 @@ Keep the dataset, `--runs`, `--base-seed`, tuning, T values, epsilon values, and
 ## Manual stages (optional)
 
 ```bash
-python adv_setting/run_adv_setting_experiments.py \\
-  --include_vanilla_block --runs 10 --base_seed 20261109 \\
-  --tuning refined --dataset /absolute/path/to/bodyfat_scale \\
-  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
-  --experiments impact_epsilon_and_T,impact_topology \\
-  --t_values 1000,3000,10000,30000,100000,300000,1000000 \\
+python adv_setting/run_adv_setting_experiments.py \
+  --include_vanilla_block --runs 10 --base_seed 20261109 \
+  --tuning refined --dataset /absolute/path/to/bodyfat_scale \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
+  --experiments impact_epsilon_and_T,impact_topology \
+  --t_values 1000,3000,10000,30000,100000,300000,1000000 \
   --eps_values 0.1,1,10 --skip_migration
 
-python adv_setting/validate_r1_9_runs.py \\
-  --include_vanilla_block \\
-  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
-  --runs 10 --base_seed 20261109 \\
-  --experiments impact_epsilon_and_T,impact_topology \\
-  --t_values 1000,3000,10000,30000,100000,300000,1000000 \\
+python adv_setting/validate_r1_9_runs.py \
+  --include_vanilla_block \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
+  --runs 10 --base_seed 20261109 \
+  --experiments impact_epsilon_and_T,impact_topology \
+  --t_values 1000,3000,10000,30000,100000,300000,1000000 \
   --eps_values 0.1,1,10
 
-python adv_setting/plot_adv_setting_results.py \\
-  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \\
-  --recompute_summary --require_runs 10 \\
+python adv_setting/plot_adv_setting_results.py \
+  --output_dir adv_setting/experiment_results_R1-2_vanilla_block \
+  --recompute_summary --require_runs 10 \
   --experiments impact_epsilon_and_T,impact_topology
 ```
 
