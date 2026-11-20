@@ -231,19 +231,27 @@ def _run_ptf_pbd02_strong_fixed_block(
     return float(avg_regret), float(avg_loss), float(mse)
 
 
-FIXED_BLOCK_ALPHA0 = AlgorithmSpec(
+# The earlier convex fixed-step comparison is retained only for historical
+# reproduction. It is not part of the final manuscript's Vanilla-block baseline.
+LEGACY_FIXED_BLOCK_ALPHA0 = AlgorithmSpec(
     "PTF-PBDOO-fixed-block-cor1", _run_ptf_pbd02_cor1_fixed_block,
     uses_epsilon=True, alpha_reg=0.0,
 )
-FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0 = AlgorithmSpec(
+VANILLA_BLOCK_ALPHA0 = AlgorithmSpec(
     "PTF-PBDOO-fixed-block-optimized-eta-cor1",
     partial(_run_ptf_pbd02_cor1_fixed_block, parameter_selection="fixed_block_optimized_eta"),
     uses_epsilon=True, alpha_reg=0.0,
 )
-FIXED_BLOCK_ALPHA1 = AlgorithmSpec(
+VANILLA_BLOCK_ALPHA1 = AlgorithmSpec(
     "PTF-PBDOO-fixed-block-strong", _run_ptf_pbd02_strong_fixed_block,
     uses_epsilon=True, alpha_reg=1.0,
 )
+
+# Backward-compatible names used by historical scripts.
+FIXED_BLOCK_ALPHA0 = LEGACY_FIXED_BLOCK_ALPHA0
+FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0 = VANILLA_BLOCK_ALPHA0
+FIXED_BLOCK_ALPHA1 = VANILLA_BLOCK_ALPHA1
+OBSOLETE_ALGORITHM_NAMES = frozenset((LEGACY_FIXED_BLOCK_ALPHA0.name,))
 
 
 ALGORITHMS_ALPHA0: List[AlgorithmSpec] = [
@@ -259,7 +267,7 @@ ALGORITHMS_ALPHA1: List[AlgorithmSpec] = [
 ]
 
 CONVEX_FTRL_ALGORITHMS = frozenset((
-    "PTF-PBDOO-cor1", FIXED_BLOCK_ALPHA0.name, FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name,
+    "PTF-PBDOO-cor1", VANILLA_BLOCK_ALPHA0.name,
 ))
 CONVEX_FTRL_REVISION = "paper-alg1-v1"
 
@@ -607,7 +615,33 @@ def run_experiment(
     runs_path = output_dir / f"{name}_{alpha_label}_runs.csv"
     summary_path = output_dir / f"{name}_{alpha_label}_summary.csv"
 
-    existing_runs_str = read_csv(runs_path)
+    existing_runs_all = read_csv(runs_path)
+    obsolete_rows = [
+        row for row in existing_runs_all
+        if row.get("algorithm") in OBSOLETE_ALGORITHM_NAMES
+    ]
+    existing_runs_str = [
+        row for row in existing_runs_all
+        if row.get("algorithm") not in OBSOLETE_ALGORITHM_NAMES
+    ]
+    if obsolete_rows:
+        # Preserve superseded fixed-step results outside the active run CSV so
+        # validation, summaries, and figures contain only the final baseline.
+        archive_path = output_dir / f"{name}_{alpha_label}_obsolete_weak_fixed_block_runs.csv"
+        archive_key_fields = RUN_KEY_FIELDS + ("run", "seed")
+        archived_by_key = {
+            row_key(row, archive_key_fields): row
+            for row in read_csv(archive_path) + obsolete_rows
+        }
+        write_csv(archive_path, archived_by_key.values(), preferred_fieldnames=RUN_COLUMNS)
+        if existing_runs_str:
+            write_csv(runs_path, existing_runs_str, preferred_fieldnames=RUN_COLUMNS)
+        elif runs_path.exists():
+            runs_path.unlink()
+        print(
+            f"[archive] {runs_path.name}: moved {len(obsolete_rows)} superseded fixed-step "
+            f"rows to {archive_path.name}", flush=True,
+        )
     all_runs: List[Dict[str, object]] = list(existing_runs_str)
     existing_by_key: Dict[Tuple[str, ...], Dict[int, Dict[str, object]]] = {}
     global_seed_owner: Dict[int, Tuple[str, ...]] = {}
@@ -671,8 +705,15 @@ def run_experiment(
         carried = 0
         for row in read_csv(reuse_unaffected_from / runs_path.name):
             key = row_key(row, RUN_KEY_FIELDS)
-            if key not in requested_keys or key[1] in CONVEX_FTRL_ALGORITHMS:
+            if key not in requested_keys or key[1] in OBSOLETE_ALGORITHM_NAMES:
                 continue
+            if key[1] in CONVEX_FTRL_ALGORITHMS:
+                # Reuse corrected paper-Algorithm-1 FTRL rows; skip incompatible
+                # rows so the target pipeline recomputes only those missing runs.
+                try:
+                    validate_convex_revision(row)
+                except ValueError:
+                    continue
             run_id = _parse_exact_int(row.get("run", ""))
             if not 0 <= run_id < runs:
                 continue
@@ -800,7 +841,10 @@ def run_experiment(
 
 
 def recompute_summary_only(runs_path: Path, summary_path: Path) -> None:
-    runs_rows = read_csv(runs_path)
+    runs_rows = [
+        row for row in read_csv(runs_path)
+        if row.get("algorithm") not in OBSOLETE_ALGORITHM_NAMES
+    ]
     if not runs_rows:
         return
     summary_rows = summarize_from_runs(runs_rows)

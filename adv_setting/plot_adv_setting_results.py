@@ -41,9 +41,8 @@ ALG_DISPLAY_NAME: Dict[str, str] = {
     "PBDOO-strong": "PBDOO",
     "PTF-PBDOO-cor1": r"P$\text{B}^2$D-FTRL",
     "PTF-PBDOO-strong": r"P$\text{B}^2$D-FTAL",
-    "PTF-PBDOO-fixed-block-cor1": r"P$\text{B}^2$D-FTRL (fixed block)",
-    C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name: r"P$\text{B}^2$D-FTRL (fixed block, opt. $\eta$)",
-    "PTF-PBDOO-fixed-block-strong": r"P$\text{B}^2$D-FTAL (fixed block)",
+    C.VANILLA_BLOCK_ALPHA0.name: r"P$\text{B}^2$D-FTRL (Vanilla-block)",
+    C.VANILLA_BLOCK_ALPHA1.name: r"P$\text{B}^2$D-FTAL (Vanilla-block)",
 }
 
 
@@ -80,7 +79,10 @@ def _load_summary_rows(
     if require_runs > 0:
         if not runs_path.is_file():
             raise RuntimeError(f"Missing raw run file; refusing to plot: {runs_path}")
-        raw_rows = C.read_csv(runs_path)
+        raw_rows = [
+            row for row in C.read_csv(runs_path)
+            if row.get("algorithm") not in C.OBSOLETE_ALGORITHM_NAMES
+        ]
         validation_errors = C.validate_run_rows(raw_rows, expected_runs=require_runs)
         if validation_errors:
             preview = "\n".join(validation_errors[:20])
@@ -91,7 +93,10 @@ def _load_summary_rows(
     if recompute and runs_path.exists():
         C.recompute_summary_only(runs_path, summary_path)
 
-    rows = C.read_csv(summary_path)
+    rows = [
+        row for row in C.read_csv(summary_path)
+        if row.get("algorithm") not in C.OBSOLETE_ALGORITHM_NAMES
+    ]
     if not rows:
         raise RuntimeError(f"Missing or empty summary file; refusing to plot: {summary_path}")
     if require_runs > 0:
@@ -218,10 +223,9 @@ def _print_regret_ratios(
     _emit(ftal, bdoo, "P^2D-FTAL / BDOO")
     _emit(ftal, pbdoo, "P^2D-FTAL / PBDOO")
     if alpha_label == "alpha0":
-        _emit(ftrl, C.FIXED_BLOCK_ALPHA0.name, "P^2D-FTRL / fixed block")
-        _emit(ftrl, C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, "P^2D-FTRL / fixed block (optimized eta)")
+        _emit(ftrl, C.VANILLA_BLOCK_ALPHA0.name, "P^2D-FTRL / Vanilla-block")
     else:
-        _emit(ftal, C.FIXED_BLOCK_ALPHA1.name, "P^2D-FTAL / fixed block")
+        _emit(ftal, C.VANILLA_BLOCK_ALPHA1.name, "P^2D-FTAL / Vanilla-block")
 
 
 def _save_fig(fig: plt.Figure, path: Path) -> None:
@@ -369,19 +373,15 @@ def _make_alg_rgb_color_map(display_alg_names: List[str]) -> Dict[str, str]:
             out[a] = "red"
         elif a == "PBDOO":
             out[a] = "gold"
-        elif "(fixed block)" in a:
+        elif "(Vanilla-block)" in a:
             out[a] = "black"
-        elif "(fixed block," in a:
-            out[a] = "tab:purple"
         else:
             out[a] = "blue"
     return out
 
 
 def _alg_linestyle(display_name: str) -> str:
-    if "(fixed block," in display_name:
-        return "-."
-    return "--" if "(fixed block)" in display_name else "-"
+    return "--" if "(Vanilla-block)" in display_name else "-"
 
 
 # ===================== Core plot helper (fixed color per algorithm) =====================

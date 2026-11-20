@@ -3,7 +3,7 @@ from __future__ import annotations
 """One-command R1-2/R1-9 Bodyfat experiment pipeline.
 
 Runs, in order:
-  1. the manuscript-matched experiment driver (including both convex R1-2 fixed-block choices),
+  1. the manuscript-matched experiment driver (including one Vanilla-block baseline per convexity regime),
   2. exact run/seed/metric validation,
   3. summary recomputation and figure generation.
 
@@ -23,6 +23,7 @@ DEFAULT_EPS_VALUES = "0.1,1,10"
 DEFAULT_EXPERIMENTS = "impact_epsilon_and_T,impact_topology"
 PAPER_ALG1_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_paper_alg1"
 OPTIMIZED_ETA_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_paper_alg1_paired"
+VANILLA_BLOCK_DIR = ROOT / "adv_setting" / "experiment_results_R1-2_vanilla_block"
 
 
 def _run(label: str, command: Sequence[str], *, dry_run: bool) -> None:
@@ -38,7 +39,7 @@ def main() -> None:
         description=(
             "Run the complete revised IoTJ Bodyfat experiment pipeline: "
             "experiment -> validate -> recompute summaries -> plot. "
-            "Refined tuning includes both convex R1-2 fixed-block choices automatically."
+            "Refined tuning includes one final Vanilla-block baseline in each convexity regime."
         )
     )
     parser.add_argument(
@@ -61,10 +62,10 @@ def main() -> None:
     parser.add_argument("--eps-values")
     parser.add_argument("--experiments")
     parser.add_argument("--fixed-block-optimized-eta", action="store_true",
-                        help="Run only the earlier paired convex grid pilot instead of the full pipeline.")
+                        help="Run the historical paired diagnostic against the superseded convex fixed-step baseline; not part of the paper pipeline.")
     parser.add_argument("--baseline-csv", help="Corrected convex runs CSV for paired optimized-eta runs.")
     parser.add_argument("--reuse-unaffected-from",
-                        help="Prior results directory. Reuse unchanged algorithms only and rerun all convex FTRL variants.")
+                        help="Prior results directory. Reuse matching current FTRL and unaffected runs; skip the superseded weak baseline.")
     parser.add_argument("--dry-run", action="store_true", help="Print all stages without executing them.")
     args = parser.parse_args()
 
@@ -79,7 +80,7 @@ def main() -> None:
     dataset = Path(args.dataset).expanduser()
     if not dataset.is_absolute():
         dataset = (Path.cwd() / dataset).resolve()
-    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else PAPER_ALG1_DIR
+    default_output = OPTIMIZED_ETA_DIR if args.fixed_block_optimized_eta else VANILLA_BLOCK_DIR
     output_dir = Path(args.output_dir or default_output).expanduser()
     if not output_dir.is_absolute():
         output_dir = (ROOT / output_dir).resolve()
@@ -121,9 +122,7 @@ def main() -> None:
     ]
 
     python = sys.executable
-    fixed_block_flags = ["--include_fixed_block"]
-    if args.tuning == "refined":
-        fixed_block_flags.append("--include_fixed_block_optimized_eta")
+    fixed_block_flags = ["--include_vanilla_block"] if args.tuning == "refined" else []
     reuse_flags = []
     if args.reuse_unaffected_from is not None:
         if args.tuning != "refined":
@@ -160,8 +159,8 @@ def main() -> None:
     print(f"  T values      : {args.t_values or DEFAULT_T_VALUES}", flush=True)
     print(f"  Epsilon values: {args.eps_values or DEFAULT_EPS_VALUES}", flush=True)
     print(f"  Experiments   : {experiment_list}", flush=True)
-    print("  Fixed-block   : " + ("2 convex, 1 strongly convex" if args.tuning == "refined"
-                                   else "1 per convexity case (legacy)"), flush=True)
+    print("  Vanilla-block : " + ("1 per convexity case" if args.tuning == "refined"
+                                    else "not included in legacy reproduction"), flush=True)
 
     _run("STAGE 1/3: Run or resume all requested experiments", run_cmd, dry_run=args.dry_run)
     _run("STAGE 2/3: Validate run counts, seeds, and metrics", validate_cmd, dry_run=args.dry_run)

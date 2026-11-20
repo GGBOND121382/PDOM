@@ -49,12 +49,19 @@ def expected_keys(
     alpha_label: str,
     t_values: list[int],
     eps_values: list[float],
-    include_fixed_block: bool = False,
-    include_fixed_block_optimized_eta: bool = False,
+    include_vanilla_block: bool = False,
+    *,
+    include_fixed_block: bool | None = None,
+    include_fixed_block_optimized_eta: bool | None = None,
 ) -> set[tuple[str, ...]]:
+    # Old keyword arguments remain accepted, but both request the same single baseline.
+    include_vanilla_block = (
+        include_vanilla_block or bool(include_fixed_block)
+        or bool(include_fixed_block_optimized_eta)
+    )
     alpha = 0.0 if alpha_label == "alpha0" else 1.0
     bdoo, pbdoo, proposed = ALGORITHMS[alpha_label]
-    fixed = "PTF-PBDOO-fixed-block-cor1" if alpha_label == "alpha0" else "PTF-PBDOO-fixed-block-strong"
+    fixed = C.VANILLA_BLOCK_ALPHA0.name if alpha_label == "alpha0" else C.VANILLA_BLOCK_ALPHA1.name
     keys: set[tuple[str, ...]] = set()
 
     if experiment == "impact_epsilon_and_T":
@@ -63,7 +70,7 @@ def expected_keys(
             for eps in eps_values:
                 keys.add(_key(experiment, pbdoo, alpha, T, eps, 9, "grid"))
                 keys.add(_key(experiment, proposed, alpha, T, eps, 9, "grid"))
-                if include_fixed_block:
+                if include_vanilla_block:
                     keys.add(_key(experiment, fixed, alpha, T, eps, 9, "grid"))
     elif experiment == "impact_topology":
         for topology in ("cycle", "grid", "complete"):
@@ -71,7 +78,7 @@ def expected_keys(
                 keys.add(_key(experiment, bdoo, alpha, T, None, 36, topology))
                 keys.add(_key(experiment, pbdoo, alpha, T, 1.0, 36, topology))
                 keys.add(_key(experiment, proposed, alpha, T, 1.0, 36, topology))
-                if include_fixed_block:
+                if include_vanilla_block:
                     keys.add(_key(experiment, fixed, alpha, T, 1.0, 36, topology))
     elif experiment == "impact_num_learners":
         for n in (4, 9, 16):
@@ -79,15 +86,10 @@ def expected_keys(
                 keys.add(_key(experiment, bdoo, alpha, T, None, n, "grid"))
                 keys.add(_key(experiment, pbdoo, alpha, T, 1.0, n, "grid"))
                 keys.add(_key(experiment, proposed, alpha, T, 1.0, n, "grid"))
-                if include_fixed_block:
+                if include_vanilla_block:
                     keys.add(_key(experiment, fixed, alpha, T, 1.0, n, "grid"))
     else:
         raise ValueError(f"Unsupported experiment: {experiment}")
-    if include_fixed_block_optimized_eta and alpha_label == "alpha0":
-        keys.update(
-            (key[0], C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, *key[2:])
-            for key in tuple(keys) if key[1] == proposed
-        )
     return keys
 
 
@@ -98,16 +100,15 @@ def main() -> None:
     ap.add_argument("--output_dir", required=True)
     ap.add_argument("--runs", type=int, default=10)
     ap.add_argument("--base_seed", type=int, default=20261109)
-    ap.add_argument("--include_fixed_block", action="store_true", help="Expect the R1-2 fixed-block baseline in every setting.")
-    ap.add_argument("--include_fixed_block_optimized_eta", action="store_true",
-                    help="Also expect the optimized-eta fixed-block baseline in every convex setting.")
+    ap.add_argument(
+        "--include_vanilla_block", "--include_fixed_block", "--include_fixed_block_optimized_eta",
+        dest="include_vanilla_block", action="store_true",
+        help="Expect the single final Vanilla-block baseline in each convexity regime.",
+    )
     ap.add_argument("--t_values", default="1000,3000,10000,30000,100000,300000,1000000")
     ap.add_argument("--eps_values", default="0.1,1,10")
     ap.add_argument("--experiments", default="impact_epsilon_and_T,impact_topology")
     args = ap.parse_args()
-    if args.include_fixed_block_optimized_eta and not args.include_fixed_block:
-        ap.error("--include_fixed_block_optimized_eta requires --include_fixed_block.")
-
     if args.runs <= 0:
         ap.error("--runs must be positive")
 
@@ -137,7 +138,10 @@ def main() -> None:
                 print(f"[FAIL] missing {path}")
                 continue
 
-            rows = C.read_csv(path)
+            rows = [
+                row for row in C.read_csv(path)
+                if row.get("algorithm") not in C.OBSOLETE_ALGORITHM_NAMES
+            ]
             errors = C.validate_run_rows(
                 rows,
                 expected_runs=args.runs,
@@ -146,8 +150,7 @@ def main() -> None:
             actual = {C.row_key(row, C.RUN_KEY_FIELDS) for row in rows}
             expected = expected_keys(
                 experiment, alpha_label, t_values, eps_values,
-                include_fixed_block=args.include_fixed_block,
-                include_fixed_block_optimized_eta=args.include_fixed_block_optimized_eta,
+                include_vanilla_block=args.include_vanilla_block,
             )
             missing = expected - actual
             unexpected = actual - expected

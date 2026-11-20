@@ -30,7 +30,7 @@ class FixedBlockComparisonTests(unittest.TestCase):
                            r=10.0, C_norm=10.0, P=self.P,
                            L=2.0, M=3.0)
 
-    def test_convex_original_step_and_theorem_1_xi_balance(self):
+    def test_historical_convex_fixed_eta_formula_is_retained_but_not_active(self):
         p = self.params
         tau, xi, eta, Ctau = fixed_block_params_convex(**p)
         self.assertEqual(tau, math.ceil(Ctau))
@@ -39,6 +39,8 @@ class FixedBlockComparisonTests(unittest.TestCase):
         A = p['d']**2*p['M']**2 * (1+p['d']**2/(p['n']*tau*p['epsilon']**2))
         B = p['L']*p['d']**2*p['M']/p['epsilon']
         self.assertAlmostEqual(xi, min(max((eta*A/K)**(1/3), math.sqrt(eta*B/K)), 0.9*p['r']))
+        self.assertNotIn(C.LEGACY_FIXED_BLOCK_ALPHA0, C.ALGORITHMS_ALPHA0)
+        self.assertNotIn(C.LEGACY_FIXED_BLOCK_ALPHA0.name, C.CONVEX_FTRL_ALGORITHMS)
 
     def test_strong_theorem_2_xi_at_fixed_tau(self):
         p = dict(self.params, alpha=1.0)
@@ -120,26 +122,85 @@ class FixedBlockComparisonTests(unittest.TestCase):
             self.assertEqual(float(b["avg_regret_per_round"]), 1.)
             self.assertEqual(b["implementation"], C.CONVEX_FTRL_REVISION)
             self.assertEqual(len(C.read_csv(source / filename)), 2)
-    def test_existing_three_unchanged_optional_fourth_in_validation(self):
-        original = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0])
-        added = expected_keys('impact_epsilon_and_T', 'alpha0', [100], [1.0], include_fixed_block=True)
-        self.assertEqual(len(original), 3)
-        self.assertEqual(len(added), 4)
-        self.assertEqual(len(added - original), 1)
-        self.assertIn('PTF-PBDOO-fixed-block-cor1', {spec.name for spec in [C.FIXED_BLOCK_ALPHA0]})
-        self.assertIn('PTF-PBDOO-fixed-block-strong', {spec.name for spec in [C.FIXED_BLOCK_ALPHA1]})
+    def test_one_vanilla_block_baseline_is_expected_in_each_convexity_case(self):
+        for alpha, baseline in (
+            ("alpha0", C.VANILLA_BLOCK_ALPHA0),
+            ("alpha1", C.VANILLA_BLOCK_ALPHA1),
+        ):
+            original = expected_keys("impact_epsilon_and_T", alpha, [100], [1.0])
+            added = expected_keys(
+                "impact_epsilon_and_T", alpha, [100], [1.0],
+                include_vanilla_block=True,
+            )
+            self.assertEqual(len(original), 3)
+            self.assertEqual(len(added), 4)
+            self.assertEqual(len(added - original), 1)
+            self.assertIn(baseline.name, {key[1] for key in added})
+            self.assertNotIn(C.LEGACY_FIXED_BLOCK_ALPHA0.name, {key[1] for key in added})
 
-    def test_full_comparison_adds_only_the_convex_baseline_at_every_private_point(self):
-        for experiment in ('impact_epsilon_and_T', 'impact_topology', 'impact_num_learners'):
-            for alpha in ('alpha0', 'alpha1'):
-                old = expected_keys(experiment, alpha, [1000, 3000], [0.1, 1, 10], True)
-                new = expected_keys(experiment, alpha, [1000, 3000], [0.1, 1, 10], True, True)
+    def test_full_comparison_adds_exactly_one_vanilla_baseline_per_private_point(self):
+        for experiment in ("impact_epsilon_and_T", "impact_topology", "impact_num_learners"):
+            for alpha, proposed, baseline in (
+                ("alpha0", "PTF-PBDOO-cor1", C.VANILLA_BLOCK_ALPHA0.name),
+                ("alpha1", "PTF-PBDOO-strong", C.VANILLA_BLOCK_ALPHA1.name),
+            ):
+                old = expected_keys(experiment, alpha, [1000, 3000], [0.1, 1, 10])
+                new = expected_keys(
+                    experiment, alpha, [1000, 3000], [0.1, 1, 10],
+                    include_vanilla_block=True,
+                )
                 self.assertTrue(old <= new)
                 expected = {
-                    (key[0], C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name, *key[2:])
-                    for key in old if key[1] == 'PTF-PBDOO-cor1'
+                    (key[0], baseline, *key[2:])
+                    for key in old if key[1] == proposed
                 }
                 self.assertEqual(new - old, expected)
+
+    def test_reuses_corrected_convex_ftrl_rows_and_ignores_obsolete_baseline(self):
+        with TemporaryDirectory() as root:
+            source, target = Path(root) / "old", Path(root) / "new"
+            experiment, t, n, eps, topo = "impact_epsilon_and_T", 1000, 9, 1.0, "grid"
+            active_names = (
+                "unaffected",
+                "PTF-PBDOO-cor1",
+                C.VANILLA_BLOCK_ALPHA0.name,
+            )
+            rows = []
+            for algorithm in active_names + (C.LEGACY_FIXED_BLOCK_ALPHA0.name,):
+                key = C.make_run_key(
+                    experiment=experiment, algorithm=algorithm, alpha_reg=0.0,
+                    T=t, epsilon=eps, num_nodes=n, topology=topo,
+                )
+                row = dict(
+                    experiment=experiment, algorithm=algorithm, alpha_reg=0.0,
+                    run=0, seed=C.deterministic_seed(9, key, 0), T=t, epsilon=eps,
+                    num_nodes=n, topology=topo, avg_regret_per_round=10.0,
+                    avg_loss_per_round=11.0, mse=12.0,
+                )
+                if algorithm in C.CONVEX_FTRL_ALGORITHMS:
+                    row["implementation"] = C.CONVEX_FTRL_REVISION
+                rows.append(row)
+            C.write_csv(source / f"{experiment}_alpha0_runs.csv", rows)
+
+            def fail_if_run(*args, **kwargs):
+                self.fail("a matching corrected result should have been reused")
+
+            algorithms = [
+                C.AlgorithmSpec("unaffected", fail_if_run, True, 0.0),
+                C.AlgorithmSpec("PTF-PBDOO-cor1", fail_if_run, True, 0.0),
+                C.AlgorithmSpec(C.VANILLA_BLOCK_ALPHA0.name, fail_if_run, True, 0.0),
+            ]
+            C.run_experiment(
+                name=experiment,
+                settings=[dict(T=t, num_nodes=n, topology=topo, epsilon=eps)],
+                algorithms=algorithms, alpha_label="alpha0", runs=1, base_seed=9,
+                X=np.zeros((1, 1)), y=np.zeros(1), output_dir=target,
+                reuse_unaffected_from=source,
+            )
+            out = C.read_csv(target / f"{experiment}_alpha0_runs.csv")
+            self.assertEqual({r["algorithm"] for r in out}, set(active_names))
+            self.assertEqual(len(out), 3)
+            self.assertEqual(len(C.read_csv(source / f"{experiment}_alpha0_runs.csv")), 4)
 
     def test_floor_rejects_too_short_horizon(self):
         with self.assertRaisesRegex(ValueError, 'ceil\\(C_tau\\) <= T'):
