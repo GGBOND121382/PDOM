@@ -283,6 +283,29 @@ def _build_network_topology(topology: str, num_nodes: int) -> Tuple[np.ndarray, 
     return base_adj, gossip_matrix, rho_value, a
 
 
+def _build_lazy_metropolis_matrix(adj: np.ndarray) -> np.ndarray:
+    """Symmetric doubly stochastic lazy Metropolis weights on an undirected graph."""
+    adj = np.asarray(adj, dtype=bool)
+    if adj.ndim != 2 or adj.shape[0] != adj.shape[1] or adj.shape[0] < 2:
+        raise ValueError("Expected square adjacency with at least two nodes.")
+    if np.any(np.diag(adj)) or not np.array_equal(adj, adj.T):
+        raise ValueError("Expected undirected adjacency without self-loops.")
+    degrees = adj.sum(axis=1).astype(float)
+    W = adj.astype(float) / (1.0 + np.maximum(degrees[:, None], degrees[None, :]))
+    np.fill_diagonal(W, 1.0 - W.sum(axis=1))
+    P = 0.5 * (np.eye(len(adj)) + W)
+    eig = np.linalg.eigvalsh(P)
+    if eig[0] < -1e-12 or eig[-2] >= 1.0 - 1e-12:
+        raise ValueError("Lazy Metropolis requires a connected undirected graph.")
+    return P
+
+
+def _build_accelerated_gossip_matrix(topology: str, num_nodes: int) -> np.ndarray:
+    """Only the proposed accelerated methods and Vanilla-block use this P."""
+    adj, _, _, _ = _build_network_topology(topology, num_nodes)
+    return _build_lazy_metropolis_matrix(adj)
+
+
 def run_algorithm2_bandit_paper_params(
     loss_oracle: Callable[[int, int, np.ndarray], float],
     T: int,

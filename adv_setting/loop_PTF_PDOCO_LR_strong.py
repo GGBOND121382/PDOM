@@ -8,7 +8,7 @@ import math
 import numpy as np
 
 from optimization_utils.BanditLogisticRegression import (
-    _build_network_topology,
+    _build_accelerated_gossip_matrix,
     _compute_bounds,
     _load_bodyfat_dataset,
     _make_loss_oracle,
@@ -418,7 +418,7 @@ def run_ptf_pbd02_linear_regression_strong_corollary2(
     max_abs_b = float(np.abs(y).max(initial=0.0))
     L, M = _parse_compute_bounds_output(_compute_bounds(R=R, alpha_reg=alpha_reg, max_abs_b=max_abs_b))
 
-    _, gossip_matrix, _, _ = _build_network_topology(network_topology, num_nodes)
+    gossip_matrix = _build_accelerated_gossip_matrix(network_topology, num_nodes)
 
     C_norm = R
     import os
