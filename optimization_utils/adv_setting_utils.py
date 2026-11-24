@@ -335,6 +335,9 @@ class StreamingAvgLossRegretAccumulator:
         if X_t.shape != (self._n, self._X.shape[1]):
             raise ValueError(f"x_t must have shape {(self._n, self._X.shape[1])}, got {X_t.shape}")
 
+        if not np.isfinite(X_t).all() or np.any(np.linalg.norm(X_t, axis=1) > self._R + 1e-8):
+            raise ValueError(f"Infeasible or nonfinite scored decision at round {self._t + 1}")
+
         idx = self._samples[self._t]   # (n,) indices for each i at time t
         A_t = self._X[idx]             # (n,d) rows are a_{i,t}
         b_t = self._y[idx]             # (n,)   entries are b_{i,t}

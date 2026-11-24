@@ -164,6 +164,7 @@ def run_algorithm7(
     x0: Optional[np.ndarray] = None,
     store_history: bool = True,
     round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
+    query_callback: Optional[Callable[[int, np.ndarray], None]] = None,
 ) -> dict:
     """Run Algorithm (7).
 
@@ -211,6 +212,8 @@ def run_algorithm7(
         # OPGE: u ~ uniform on sphere, query at x + delta u
         u = sample_unit_sphere(n, d, rng)
         x_query = x + cfg.delta * u
+        if query_callback is not None:
+            query_callback(t, x_query)
         fvals = np.array([cost_oracle(t, i, x_query[i]) for i in range(n)], dtype=float)
         g_tilde = (d / cfg.delta) * fvals[:, None] * u
 
@@ -391,7 +394,7 @@ def run_pbddo_linear_regression_cor1(
         iters=50,
     )
 
-    delta_star = min(0.5 * R, delta_star)
+    delta_star = min(0.9 * R, delta_star)
 
     cfg = Algo7Config(
         n=num_nodes,
@@ -421,10 +424,10 @@ def run_pbddo_linear_regression_cor1(
         # w_hat averages the T+1 states x_hist[0..T]; the initial zero state
         # contributes nothing, so summing the post-update states is equivalent.
         nonlocal w_sum
-        accumulator.update(x_pre)
         w_sum += x_post
 
-    projX = lambda X_: proj_l2_ball(X_, radius=R)
+    # The actual bandit decision x + delta*u must belong to the common ball.
+    projX = lambda X_: proj_l2_ball(X_, radius=R-delta_star)
     out = run_algorithm7(
         cost_oracle=cost_oracle,
         A_seq=A_seq,
@@ -432,6 +435,7 @@ def run_pbddo_linear_regression_cor1(
         proj_X=projX,
         store_history=False,
         round_callback=_on_round,
+        query_callback=lambda t, queries: accumulator.update(queries),
     )
 
     # Average loss and average regret (both normalized by T)

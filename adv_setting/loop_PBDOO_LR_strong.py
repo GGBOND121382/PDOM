@@ -154,6 +154,7 @@ def algorithm1_dp_opbf(
     z_diag_floor: float = 1e-12,
     return_history: bool = False,
     round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
+    query_callback: Optional[Callable[[int, np.ndarray], None]] = None,
 ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
     """
     Algorithm 1 in the paper (row-stochastic directed network):
@@ -205,9 +206,12 @@ def algorithm1_dp_opbf(
         Z_next = W @ Z
 
         u = sample_unit_vectors(rng, n=n, d=d)
+        queries = x + delta_safe * u
+        if query_callback is not None:
+            query_callback(t, queries)
         g_tilde = np.zeros((n, d), dtype=float)
         for i in range(n):
-            fx = float(loss_fn(i, t, x[i] + delta_safe * u[i]))
+            fx = float(loss_fn(i, t, queries[i]))
             g_tilde[i] = (d / delta_safe) * fx * u[i]
 
         x_next = np.zeros_like(x)
@@ -355,7 +359,7 @@ def run_pbddo_linear_regression_strong(
 
     delta_safe = max(float(delta), 1e-12)
 
-    delta_safe = min(0.5 * R, delta_safe)
+    delta_safe = min(0.9 * R, delta_safe)
 
     # P = dM/delta
     P = (float(dim) * M) / delta_safe
@@ -396,7 +400,6 @@ def run_pbddo_linear_regression_strong(
         # w_hat averages the T+1 states hist[0..T]; the initial (projected) zero
         # state contributes nothing, so summing post-update states is equivalent.
         nonlocal w_sum
-        accumulator.update(x_pre)
         w_sum += x_post
 
     xT = algorithm1_dp_opbf(
@@ -407,9 +410,10 @@ def run_pbddo_linear_regression_strong(
         delta=delta_safe,
         sigma=sigma,
         x0=x0,
-        radius=R,
+        radius=R-delta_safe,
         return_history=False,
         round_callback=_on_round,
+        query_callback=lambda t, queries: accumulator.update(queries),
         seed=0,
         rng=rng,
     )

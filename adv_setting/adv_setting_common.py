@@ -473,6 +473,10 @@ def validate_run_rows(
                 global_seeds[seed_s] = key
 
             for metric in ("avg_regret_per_round", "avg_loss_per_round", "mse"):
+                # Preserved cap09 pilot records contain the paper metric only.
+                if (metric != "avg_regret_per_round" and row.get("implementation") == "query-feasible-cap09-v2-regret-only"
+                        and row.get(metric, "") == ""):
+                    continue
                 try:
                     value = float(str(row.get(metric, "")))
                 except (TypeError, ValueError):
@@ -565,15 +569,16 @@ def summarize_from_runs(
         base["num_runs"] = len(rows)
 
         regrets = np.asarray([_safe_float(r.get("avg_regret_per_round", "")) for r in rows], dtype=float)
-        losses = np.asarray([_safe_float(r.get("avg_loss_per_round", "")) for r in rows], dtype=float)
-        mses = np.asarray([_safe_float(r.get("mse", "")) for r in rows], dtype=float)
-
         base["avg_regret_mean"] = float(regrets.mean()) if len(regrets) else 0.0
         base["avg_regret_std"] = float(regrets.std(ddof=1)) if len(regrets) > 1 else 0.0
-        base["avg_loss_mean"] = float(losses.mean()) if len(losses) else 0.0
-        base["avg_loss_std"] = float(losses.std(ddof=1)) if len(losses) > 1 else 0.0
-        base["mse_mean"] = float(mses.mean()) if len(mses) else 0.0
-        base["mse_std"] = float(mses.std(ddof=1)) if len(mses) > 1 else 0.0
+        for metric, prefix in (("avg_loss_per_round", "avg_loss"), ("mse", "mse")):
+            # Do not fabricate auxiliary statistics or summarize incomplete groups.
+            if any(r.get(metric, "") == "" and r.get("implementation") == "query-feasible-cap09-v2-regret-only" for r in rows):
+                base[prefix + "_mean"] = base[prefix + "_std"] = ""
+            else:
+                values = np.asarray([_safe_float(r.get(metric, "")) for r in rows], dtype=float)
+                base[prefix + "_mean"] = float(values.mean()) if len(values) else 0.0
+                base[prefix + "_std"] = float(values.std(ddof=1)) if len(values) > 1 else 0.0
 
         out.append(base)
 

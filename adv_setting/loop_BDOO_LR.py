@@ -212,9 +212,9 @@ def run_bdoo_linear_regression(
     w_sum = np.zeros((num_nodes, dim), dtype=float)
 
     def _on_round(t: int, x_pre: np.ndarray, x_post: np.ndarray) -> None:
-        # Regret uses the post-update iterate (use_pre_update_iterate=False).
+        # Round-t regret uses the decision before observing the round-t loss.
+        # The update produces the decision for the next round, not round t.
         nonlocal w_sum
-        accumulator.update(x_post)
         w_sum += x_post
 
     run_algorithm2_bandit_paper_params(
@@ -235,6 +235,7 @@ def run_bdoo_linear_regression(
         rng=rng,
         store_history=False,
         round_callback=_on_round,
+        query_callback=lambda t, queries: accumulator.update(queries),
     )
 
     # Compute average loss per round and average regret per round (normalized by T)

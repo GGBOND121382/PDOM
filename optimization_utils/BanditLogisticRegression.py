@@ -312,6 +312,7 @@ def run_algorithm2_bandit_paper_params(
     # each round's iterates through round_callback(t, x_pre, x_post) instead.
     store_history: bool = True,
     round_callback: Optional[Callable[[int, np.ndarray, np.ndarray], None]] = None,
+    query_callback: Optional[Callable[[int, np.ndarray], None]] = None,
 ) -> Tuple[Optional[np.ndarray], Optional[np.ndarray]]:
     """
     BDOO baseline (YanSVQ13-style, in our bandit setting).
@@ -423,8 +424,9 @@ def run_algorithm2_bandit_paper_params(
     else:
         raise ValueError("setting must be 'convex' or 'strongly_convex'.")
 
-    while xi > 1:
-        xi /= 2.
+    # Match the proposed algorithms' finite-horizon exploration cap.
+    xi = min(delta / r, 0.9)
+    delta = xi * r
 
     print("xi: ", xi)
 
@@ -478,9 +480,12 @@ def run_algorithm2_bandit_paper_params(
             U[i] = _sample_unit_sphere(dim, rng)
 
         # 2) observe one-point bandit feedback f_{i,t}(x_{i,t} + δ u_{i,t})
+        queries = x_t + delta * U
+        if query_callback is not None:
+            query_callback(t, queries)
         f_vals = np.zeros(num_nodes, dtype=float)
         for i in range(num_nodes):
-            query_point = x_t[i] + delta * U[i]
+            query_point = queries[i]
             f_vals[i] = loss_oracle(i, t, query_point)
         if store_history:
             losses[t - 1] = f_vals
