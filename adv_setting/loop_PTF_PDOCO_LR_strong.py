@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 import math
@@ -149,6 +150,7 @@ def corollary2_params_legacy(
 def corollary2_params(
     *, T: int, d: int, n: int, epsilon: float, alpha: float,
     r: float, C_norm: float, P: Array, L: float, M: float,
+    tau_multiplier: float = 1.0, xi_multiplier: float = 1.0,
 ) -> Tuple[int, float, float]:
     r"""Evaluate the R1-5 Corollary 2 parameters as printed in the manuscript.
 
@@ -166,7 +168,7 @@ def corollary2_params(
         alpha**2 * d**4 * M**2 * (M + L*r)**2 * T**2
         / (n * r**2 * epsilon**2 * (L**2 + alpha**2 * C_norm**2)**3 * lnT**2)
     ) ** (1.0 / 4.0)
-    tau=int(math.ceil(max(tau_expr,C_tau)))
+    tau=int(math.ceil(max(tau_multiplier*tau_expr,C_tau)))
     if tau > T:
         raise ValueError(f"Corollary 2 requires tau <= T, but computed tau={tau} for T={T}.")
 
@@ -179,12 +181,13 @@ def corollary2_params(
         L * d**2 * M * r * lnT
         / (alpha * epsilon * (M + L*r) * T)
     ) ** (1.0 / 2.0)
-    xi=min(max(xi_bandit,xi_privacy),0.9*r)
+    xi=min(xi_multiplier*max(xi_bandit,xi_privacy),0.9*r)
     return tau,float(xi),float(C_tau)
 
 def fixed_block_params_strong(
     *, T: int, d: int, n: int, epsilon: float, alpha: float,
     r: float, C_norm: float, P: Array, L: float, M: float,
+    xi_multiplier: float = 1.0,
 ) -> Tuple[int, float, float]:
     """R1-2 Sec. IV-B: tau=ceil(C_tau), xi optimized as in Theorem 2.
 
@@ -210,7 +213,7 @@ def fixed_block_params_strong(
     xi_privacy = (
         L * d**2 * M * r * lnT / (alpha * epsilon * (M + L*r) * T)
     ) ** 0.5
-    xi = min(max(xi_bandit, xi_privacy), 0.9*r)
+    xi = min(xi_multiplier * max(xi_bandit, xi_privacy), 0.9*r)
     return tau, float(xi), float(C_tau)
 
 
@@ -378,6 +381,11 @@ def run_ptf_pbd02_strongly_convex(
 # Uses the selected Corollary 2 schedule (refined by default).
 # ============================================================
 
+# Frozen finite-horizon multipliers; apply xi multiplier before the cap.
+final_tuned_corollary2_params = partial(corollary2_params, tau_multiplier=6.0, xi_multiplier=0.75)
+final_tuned_fixed_block_strong = partial(fixed_block_params_strong, xi_multiplier=0.75)
+
+
 def run_ptf_pbd02_linear_regression_strong_corollary2(
     X: np.ndarray,
     y: np.ndarray,
@@ -424,9 +432,11 @@ def run_ptf_pbd02_linear_regression_strong_corollary2(
     import os
     tuning = (parameter_selection or os.environ.get("PDOM_R15_TUNING", "refined")).lower()
     tuning_fns = {
-        "refined": corollary2_params,
+        "refined": final_tuned_corollary2_params,
+        "theory": corollary2_params,
         "legacy": corollary2_params_legacy,
-        "fixed_block": fixed_block_params_strong,
+        "fixed_block": final_tuned_fixed_block_strong,
+        "fixed_block_theory": fixed_block_params_strong,
     }
     if tuning not in tuning_fns:
         raise ValueError(f"Unsupported parameter selection: {tuning}")

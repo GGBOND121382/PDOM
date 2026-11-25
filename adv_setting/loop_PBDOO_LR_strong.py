@@ -84,37 +84,38 @@ def _left_perron_vector_row_stochastic(W: np.ndarray, iters: int = 5000, tol: fl
 
 
 def _estimate_lambda_and_C(W: np.ndarray, psi: np.ndarray, K: int = 300) -> Tuple[float, float]:
+    """Reversible-chain spectral bound; avoid dividing roundoff by lambda**t.
+
+    K is retained for compatibility with the previous estimator. The current
+    experimental matrices are connected, reversible random walks with loops.
     """
-    Estimate (lambda, C) for a bound like:
-      max_ij |(W^t)_{ij} - psi_j| <= C * lambda^t.
-
-    - lambda: 2nd largest eigenvalue magnitude of W (excluding ~1).
-    - C: empirical max over t<=K of (max_ij diff) / lambda^t.
-    """
-    eigvals = np.linalg.eigvals(W)
-    mags = np.sort(np.abs(eigvals))[::-1]
-
-    lam = 0.0
-    for m in mags:
-        if abs(m - 1.0) > 1e-8:
-            lam = float(m)
-            break
-    lam = float(np.clip(lam, 0.0, 0.999999))
-
-    n = W.shape[0]
-    W_inf = np.ones((n, 1)) @ psi.reshape(1, n)
-
-    if lam <= 1e-12:
-        return 0.0, 1.0
-
-    Wt = np.eye(n, dtype=float)
-    best = 0.0
-    for t in range(1, K + 1):
-        Wt = Wt @ W
-        diff = float(np.max(np.abs(Wt - W_inf)))
-        best = max(best, diff / (lam ** t + 1e-18))
-    C = max(best, 1.0)
-    return lam, C
+    W = np.asarray(W, dtype=float)
+    psi = np.asarray(psi, dtype=float).reshape(-1)
+    n = len(psi)
+    if W.shape != (n, n) or n < 2 or not np.isfinite(W).all() or np.any(W < 0):
+        raise ValueError("Expected a nonnegative square stochastic matrix.")
+    if not np.allclose(W.sum(axis=1), 1.0, rtol=0, atol=1e-12):
+        raise ValueError("W must be row-stochastic.")
+    # Solve the normalized stationary system, rather than amplifying errors
+    # from a finite-iteration estimate of psi.
+    system = W.T - np.eye(n)
+    system[-1, :] = 1.0
+    rhs = np.zeros(n)
+    rhs[-1] = 1.0
+    pi = np.linalg.solve(system, rhs)
+    if np.any(pi <= 0) or not np.allclose(pi @ W, pi, rtol=0, atol=1e-12):
+        raise ValueError("Expected a positive stationary distribution.")
+    if not np.allclose(pi[:, None]*W, pi[None, :]*W.T, rtol=0, atol=1e-12):
+        raise ValueError("Reversible spectral bound is not valid for this W.")
+    root = np.sqrt(pi)
+    S = root[:, None]*W/root[None, :]
+    eig = np.linalg.eigvalsh((S + S.T)/2.0)
+    if abs(eig[-1]-1.0) > 1e-12:
+        raise ValueError("Stationary eigenvalue is not one.")
+    lam = float(np.max(np.abs(eig[:-1])))
+    if lam >= 1.0 - 1e-12:
+        raise ValueError("Expected a connected aperiodic reversible chain.")
+    return lam, float(np.sqrt(pi.max()/pi.min()))
 
 
 def _estimate_subgradient_bound_L_for_ridge_ls(X: np.ndarray, y: np.ndarray, R: float, alpha_reg: float) -> float:
@@ -355,7 +356,7 @@ def run_pbddo_linear_regression_strong(
             M=M,
             eps=eps_safe,
         )
-        delta = _compute_delta_star_paper(T=T, n=num_nodes, L=L, Upsilon=Upsilon)
+        delta = 0.04 * _compute_delta_star_paper(T=T, n=num_nodes, L=L, Upsilon=Upsilon)
 
     delta_safe = max(float(delta), 1e-12)
 

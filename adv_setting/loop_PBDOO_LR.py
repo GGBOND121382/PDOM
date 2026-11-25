@@ -332,7 +332,7 @@ def run_pbddo_linear_regression_cor1(
     T: int = 20000,
     num_nodes: int = 8,
     epsilon: float = 2.0,
-    zeta: float = 1.0,
+    zeta: float = 1e-4,
     R: float = 10.0,
     alpha_reg: float = 0.0,
     network_topology: str = "cycle",
@@ -394,7 +394,7 @@ def run_pbddo_linear_regression_cor1(
         iters=50,
     )
 
-    delta_star = min(0.9 * R, delta_star)
+    delta_star = min(0.9 * R, 0.1 * delta_star)
 
     cfg = Algo7Config(
         n=num_nodes,

@@ -42,8 +42,8 @@ ALG_DISPLAY_NAME: Dict[str, str] = {
     "PTF-PBDOO-cor1": r"P$\text{B}^2$D-FTRL",
     "PTF-PBDOO-strong": r"P$\text{B}^2$D-FTAL",
     "PTF-PBDOO-fixed-block-cor1": r"P$\text{B}^2$D-FTRL (fixed block)",
-    C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name: r"P$\text{B}^2$D-FTRL (fixed block, opt. $\eta$)",
-    "PTF-PBDOO-fixed-block-strong": r"P$\text{B}^2$D-FTAL (fixed block)",
+    C.FIXED_BLOCK_OPTIMIZED_ETA_ALPHA0.name: "Vanilla-block",
+    "PTF-PBDOO-fixed-block-strong": "Vanilla-block",
 }
 
 

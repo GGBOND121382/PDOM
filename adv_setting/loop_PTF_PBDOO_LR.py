@@ -13,6 +13,7 @@ action_callback.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Tuple
 import math
@@ -144,6 +145,7 @@ def corollary1_params_legacy(
 def corollary1_params(
     *, T: int, d: int, n: int, epsilon: float, r: float,
     C_norm: float, P: Array, L: float, M: float,
+    tau_multiplier: float = 1.0, eta_multiplier: float = 1.0,
 ) -> Tuple[int, float, float, float]:
     r"""Evaluate the R1-5 Corollary 1 parameters as printed in the manuscript.
 
@@ -162,14 +164,14 @@ def corollary1_params(
         d**4 * M**2 * (M + L*r)**2 * T
         / (n * L**4 * r**2 * C_norm**2 * epsilon**2)
     ) ** (1.0 / 3.0)
-    tau = int(math.ceil(max(C_tau, tau_expr)))
+    tau = int(math.ceil(max(C_tau, tau_multiplier * tau_expr)))
     if tau > T:
         raise ValueError(f"Corollary 1 requires tau <= T, but computed tau={tau} for T={T}.")
 
     xi, eta = _optimized_xi_eta_at_tau(
         T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, L=L, M=M, tau=tau,
     )
-    return tau, xi, eta, float(C_tau)
+    return tau, xi, eta_multiplier * eta, float(C_tau)
 
 
 def _optimized_xi_eta_at_tau(
@@ -233,6 +235,7 @@ def fixed_block_params_convex(
 def fixed_block_optimized_eta_params_convex(
     *, T: int, d: int, n: int, epsilon: float, r: float,
     C_norm: float, P: Array, L: float, M: float,
+    eta_multiplier: float = 1.0,
 ) -> Tuple[int, float, float, float]:
     """Second Sec. IV-A comparison: fix tau, then rebalance xi and eta."""
     tau, C_tau = _fixed_block_size(
@@ -241,7 +244,7 @@ def fixed_block_optimized_eta_params_convex(
     xi, eta = _optimized_xi_eta_at_tau(
         T=T, d=d, n=n, epsilon=epsilon, r=r, C_norm=C_norm, L=L, M=M, tau=tau,
     )
-    return tau, xi, eta, C_tau
+    return tau, xi, eta_multiplier * eta, C_tau
 
 
 # ============================================================
@@ -403,6 +406,11 @@ def run_ptf_pbd02_convex(
 #   Uses the selected Corollary 1 schedule (refined by default).
 # ============================================================
 
+# Frozen finite-horizon multipliers; theoretical helpers retain unit defaults.
+final_tuned_corollary1_params = partial(corollary1_params, tau_multiplier=1.4, eta_multiplier=1.5)
+final_tuned_fixed_block_convex = partial(fixed_block_optimized_eta_params_convex, eta_multiplier=1.5)
+
+
 def run_ptf_pbd02_linear_regression_corollary1(
     X: np.ndarray,
     y: np.ndarray,
@@ -447,10 +455,12 @@ def run_ptf_pbd02_linear_regression_corollary1(
     import os
     tuning = (parameter_selection or os.environ.get("PDOM_R15_TUNING", "refined")).lower()
     tuning_fns = {
-        "refined": corollary1_params,
+        "refined": final_tuned_corollary1_params,
+        "theory": corollary1_params,
         "legacy": corollary1_params_legacy,
         "fixed_block": fixed_block_params_convex,
-        "fixed_block_optimized_eta": fixed_block_optimized_eta_params_convex,
+        "fixed_block_optimized_eta": final_tuned_fixed_block_convex,
+        "fixed_block_theory": fixed_block_optimized_eta_params_convex,
     }
     if tuning not in tuning_fns:
         raise ValueError(f"Unsupported parameter selection: {tuning}")
