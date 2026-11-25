@@ -407,6 +407,7 @@ def run_algorithm2_bandit_paper_params(
     if not (0.0 < rho < 1.0):
         raise ValueError("rho must be in (0, 1).")
 
+    # Fixed experimental multipliers; all theoretical dependencies are retained.
     # Convex case (Theorem 3 in the paper):
     #   η_t = 2 δ R / (d C sqrt(t))
     #   δ = (c1 / c2)^{1/2} T^{-1/4}
@@ -418,11 +419,11 @@ def run_algorithm2_bandit_paper_params(
         c2 = 2.0 * (L_f + C / r)
         print("c1:", c1)
         print("c2:", c2)
-        delta = np.sqrt(c1 / c2) * (T ** (-0.25))
+        delta = 0.02 * np.sqrt(c1 / c2) * (T ** (-0.25))
         xi = delta / r
 
         def eta_t(t: int) -> float:
-            return 2.0 * delta * R / (d * C * np.sqrt(float(t)))
+            return 4.0 * delta * R / (d * C * np.sqrt(float(t)))
 
     # Strongly convex case (Theorem 4 in the paper):
     #   η_t = 1 / (α t)
@@ -438,7 +439,7 @@ def run_algorithm2_bandit_paper_params(
             1.0 + 6.0 * rho * (1.0 + np.sqrt(N)) / (1.0 - rho)
         )
         c2 = 2.0 * (L_f + C / r)
-        delta = ((2.0 * c3 * (1.0 + np.log(T))) / (c2 * T)) ** (1.0 / 3.0)
+        delta = 0.2 * ((2.0 * c3 * (1.0 + np.log(T))) / (c2 * T)) ** (1.0 / 3.0)
         xi = delta / r
 
         def eta_t(t: int) -> float:
