@@ -332,7 +332,7 @@ def run_pbddo_linear_regression_cor1(
     T: int = 20000,
     num_nodes: int = 8,
     epsilon: float = 2.0,
-    zeta: float = 3e-6,
+    zeta: float = 3e-4,
     R: float = 10.0,
     alpha_reg: float = 0.0,
     network_topology: str = "cycle",

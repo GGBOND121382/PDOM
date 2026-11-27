@@ -23,7 +23,7 @@ from optimization_utils.BanditLogisticRegression import _load_bodyfat_dataset
 from final_tuned_support import validate_parameters, auto_workers, resource_snapshot, compare_results
 
 ROOT = pathlib.Path(__file__).resolve().parent
-VERSION = 'convex-pbdoo-trend-v1'
+VERSION = 'convex-pbdoo-c-v1'
 OLD_VERSION = 'final-tuned-v1'
 TARGET = 'PBDOO-cor1'
 FILES = [f'{e}_alpha{a}_runs.csv' for e in ('impact_epsilon_and_T', 'impact_topology') for a in (0, 1)]
@@ -73,7 +73,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('--archived', required=True, type=pathlib.Path)
     p.add_argument('--output', required=True, type=pathlib.Path)
-    p.add_argument('--workers', default='auto', help='auto or positive integer')
+    p.add_argument('--workers', default='4', help='auto or positive integer')
     p.add_argument('--pilot', action='store_true')
     p.add_argument('--max-runs', type=int)
     p.add_argument('--validate-only', action='store_true')
@@ -118,7 +118,7 @@ def main():
         raise ValueError('Unexpected experiment scope')
     if any(float(r['alpha_reg']) != 0 for r in tasks.values()):
         raise ValueError('Target must be convex PBDOO')
-    paths = sorted([*ROOT.glob('adv_setting/*.py'), *ROOT.glob('optimization_utils/*.py'), ROOT/'data/adv_setting/bodyfat', pathlib.Path(__file__).resolve(), ROOT/'final_tuned_support.py', ROOT/'redraw_figures.py'])
+    paths = sorted([*ROOT.glob('adv_setting/*.py'), *ROOT.glob('optimization_utils/*.py'), ROOT/'data/adv_setting/bodyfat', pathlib.Path(__file__).resolve(), ROOT/'final_tuned_support.py', ROOT/'redraw_figures.py', ROOT/'replay_convex_pbdoo_learning_diagnostics'/'runs.csv'])
     manifest = dict(parameter_version=VERSION, archived=archive_hashes, implementation={str(f.relative_to(ROOT)): digest(f) for f in paths}, numpy=np.__version__, python=sys.version, base_seed=20261109, count=len(tasks))
     mp, cp = out/'manifest.json', out/'checkpoint.json'
     if mp.exists():
@@ -136,6 +136,10 @@ def main():
     # Read all unique parameter sets before scheduling even one task.
     X, y = _load_bodyfat_dataset(ROOT/'data/adv_setting/bodyfat')
     validate_parameters(tasks.values(), X, y, out/'parameter_validation.csv')
+    with (out/'parameter_validation.csv').open(newline='') as h:
+        params = list(csv.DictReader(h))
+    if len(params) != 42 or any(float(r['step_at_1']) != 3e-4 or not math.isclose(float(r['xi']), min(0.3*float(r['xi_theory']), 9.0), rel_tol=1e-12) for r in params):
+        raise ValueError('Candidate C parameter preflight failed')
     print(f'Validated {len(tasks)} tasks; completed={len(done)}, remaining={len(tasks)-len(done)}', flush=True)
     if a.validate_only:
         return
@@ -239,6 +243,38 @@ def main():
                 assert old == new
                 unchanged += 1
     assert (changed, unchanged) == (420, 2660)
+    # Verify the independently repeated 54 candidate-C diagnostic queries.
+    # Historical diagnostic columns called normalized regret are actually per-round
+    # network-summed regret, matching avg_regret_per_round here, not divided by n.
+    def identity(exp, r):
+        return (exp, int(r['num_nodes']), r['topology'], int(r['T']),
+                float(r['epsilon']), int(r['run']), int(r['seed']))
+    diagnostic_path = ROOT/'replay_convex_pbdoo_learning_diagnostics'/'runs.csv'
+    with diagnostic_path.open(newline='') as h:
+        diagnostic = {identity(r['experiment'], r): float(r['query_normalized_regret'])
+                      for r in csv.DictReader(h) if float(r['zeta']) == 3e-4}
+    matched = []
+    for f in FILES:
+        exp = f.split('_alpha')[0]
+        for i, r in enumerate(rows[f]):
+            if r['algorithm'] != TARGET:
+                continue
+            key = identity(exp, r)
+            if key in diagnostic:
+                new = done[f+':'+str(i)]['avg_regret_per_round']
+                prior = diagnostic[key]
+                matched.append(dict(experiment=exp, num_nodes=key[1], topology=key[2],
+                    T=key[3], epsilon=key[4], run=key[5], seed=key[6],
+                    diagnostic_regret=prior, replay_regret=new,
+                    abs_difference=abs(new-prior),
+                    within_tolerance=math.isclose(new, prior, rel_tol=1e-8, abs_tol=1e-8)))
+    if len(diagnostic) != 54 or len(matched) != 54:
+        raise ValueError('Expected 54 matched diagnostic records')
+    with (out/'diagnostic_reproduction.csv').open('w', newline='') as h:
+        w = csv.DictWriter(h, fieldnames=list(matched[0]))
+        w.writeheader()
+        w.writerows(matched)
+    print('Matched diagnostic C queries:', sum(r['within_tolerance'] for r in matched), '/54 within tolerance; inspect differences if any', flush=True)
     print('Verified 420 new runs and 2660 unchanged archived records:', dest, flush=True)
 
 
