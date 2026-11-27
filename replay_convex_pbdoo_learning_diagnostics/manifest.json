@@ -1,0 +1,28 @@
+{
+  "archived": {
+    "impact_epsilon_and_T_alpha0_runs.csv": "13ed89f26b073271bd04e9ebc1049a44fed4118293fb85ca62dc8f26afb1dd77",
+    "impact_topology_alpha0_runs.csv": "681483332e41ec47796683eeea122767ac1c8eaf14845b961ab655355dc3dd62"
+  },
+  "base_seed": 20261109,
+  "candidates": {
+    "A": 3e-05,
+    "B": 0.0001,
+    "C": 0.0003
+  },
+  "count": 162,
+  "dataset": "ef04f6a57b4607de2c205ee9c220d68c4684634d087a88b2fed699a79bd9cf7d",
+  "delta_multiplier": 0.3,
+  "implementation": {
+    "adv_setting/loop_PBDOO_LR.py": "ee357e7c93f09ef6f18a8f91f77f89ec47728bf9ac3889beacf1849106c71bd5",
+    "diagnose_convex_pbdoo_learning.py": "90e4a22f5c80ed092103acdb06cdddd53d92e2ef74ae78f93cf32cb5631ca737",
+    "optimization_utils/BanditLogisticRegression.py": "c18c30ab9ea27a1337d918ed690206c72a377a356d5566707f67da29c1215260",
+    "optimization_utils/adv_setting_utils.py": "abda5b21af51c0c0530601a8006ebc198f2195c94adbb629e0ea4fa4165ff7cb"
+  },
+  "numpy": "2.3.5",
+  "parameter_version": "convex-pbdoo-learning-diagnostics-v1",
+  "python": "3.13.14 (main, Jun 23 2026, 15:18:27) [Clang 22.1.3 ]",
+  "trend": {
+    "impact_epsilon_and_T_alpha0_runs.csv": "a8b4e1f4736c1071ff2bd903d2b81879eb80bc87aa7f947d9692e4eecf6e2e53",
+    "impact_topology_alpha0_runs.csv": "a52a77f795387a4833205b367af8ec9db756f79000e42be12f7f8656a6e3faa8"
+  }
+}
