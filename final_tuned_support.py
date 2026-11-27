@@ -48,9 +48,9 @@ def validate_parameters(rows, X, y, path):
         elif alg == 'PBDOO-cor1':
             A = pc._build_pushsum_matrix_from_topology(top, n)
             L = pc.lipschitz_bound_squared_loss(X, y, R, a)
-            raw = pc.delta_star_corollary1_fixed_point(n=n, d=d, T=T, C=M, L=L, zeta=1e-4, epsilon=eps, A=A, l_i=0., delta_init=0.1*R, iters=50)
-            xi = min(0.1*raw, 0.9*R)
-            v.update(xi_theory=raw, xi=xi, step_at_1=1e-4, noise_scale_at_1=2*d**1.5*M/(eps*xi))
+            raw = pc.delta_star_corollary1_fixed_point(n=n, d=d, T=T, C=M, L=L, zeta=3e-6, epsilon=eps, A=A, l_i=0., delta_init=0.1*R, iters=50)
+            xi = min(0.3*raw, 0.9*R)
+            v.update(xi_theory=raw, xi=xi, step_at_1=3e-6, noise_scale_at_1=2*d**1.5*M/(eps*xi))
         elif alg == 'PBDOO-strong':
             W = ps._build_row_stochastic_W_from_topology(top, n)
             theta = ps._estimate_theta_from_W(W, K=min(T,5000), z_floor=1e-12)
