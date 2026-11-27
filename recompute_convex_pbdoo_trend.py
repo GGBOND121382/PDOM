@@ -118,7 +118,7 @@ def main():
         raise ValueError('Unexpected experiment scope')
     if any(float(r['alpha_reg']) != 0 for r in tasks.values()):
         raise ValueError('Target must be convex PBDOO')
-    paths = sorted([*ROOT.glob('adv_setting/*.py'), *ROOT.glob('optimization_utils/*.py'), ROOT/'data/adv_setting/bodyfat', pathlib.Path(__file__).resolve(), ROOT/'final_tuned_support.py'])
+    paths = sorted([*ROOT.glob('adv_setting/*.py'), *ROOT.glob('optimization_utils/*.py'), ROOT/'data/adv_setting/bodyfat', pathlib.Path(__file__).resolve(), ROOT/'final_tuned_support.py', ROOT/'redraw_figures.py'])
     manifest = dict(parameter_version=VERSION, archived=archive_hashes, implementation={str(f.relative_to(ROOT)): digest(f) for f in paths}, numpy=np.__version__, python=sys.version, base_seed=20261109, count=len(tasks))
     mp, cp = out/'manifest.json', out/'checkpoint.json'
     if mp.exists():
@@ -217,7 +217,12 @@ def main():
             w.writeheader()
             w.writerows(result)
         temp.replace(dest/f)
-    subprocess.run([sys.executable, '-m', 'adv_setting.plot_adv_setting_results', '--output_dir', str(dest), '--recompute_summary', '--require_runs', '10'], cwd=ROOT, check=True)
+    for f in FILES:
+        C.recompute_summary_only(dest/f, dest/f.replace('_runs.csv', '_summary.csv'))
+    subprocess.run([sys.executable, str(ROOT/'redraw_figures.py'), str(dest), str(out/'figures')], cwd=ROOT, check=True)
+    import shutil
+    for figure in (out/'figures'/'old_style').glob('*.png'):
+        shutil.copy2(figure, dest/figure.name)
     compare_results(src, dest, out/'comparison', FILES)
     # Explicitly verify all reused rows and all original identities after serializing.
     unchanged = changed = 0
