@@ -1,0 +1,19 @@
+{
+  "archive_sha256": "8793b8ba36f54e8ef63699cd0d527eaf26add64980d957d0399a07501e1aff50",
+  "candidates": [
+    "C"
+  ],
+  "count": 27,
+  "dataset_sha256": "ef04f6a57b4607de2c205ee9c220d68c4684634d087a88b2fed699a79bd9cf7d",
+  "implementation": {
+    "adv_setting/loop_PTF_PBDOO_LR.py": "ddf8fd0cdf642ace5477fa50f574c61298b7b6d47f8e071da7d5ee9c4b57d651",
+    "diagnose_convex_vanilla_block.py": "d377a384eabb130e9e20717463f4645f9b850342b923218fdced002396d1877b",
+    "final_tuned_support.py": "e9b2898f577e8f0c82025cc1beea6fc67546d1034e962b79287fb27e3056ff5c",
+    "optimization_utils/BanditLogisticRegression.py": "f4f9b9ed7db7a4cef635964940093d7dde720e4f62a097ab2341acf4790c26bb",
+    "optimization_utils/adv_setting_utils.py": "abda5b21af51c0c0530601a8006ebc198f2195c94adbb629e0ea4fa4165ff7cb"
+  },
+  "numpy": "2.3.5",
+  "python": "3.13.14 (main, Jun 23 2026, 15:18:27) [Clang 22.1.3 ]",
+  "scope": "topology",
+  "version": "convex-vanilla-block-diagnostics-v1"
+}

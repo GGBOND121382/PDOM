@@ -1,0 +1,32 @@
+{
+  "branch": "convex-vanilla-block-diagnostics",
+  "source_commit": "ec4fd3560c6bcc28e919f862547575aaf48a6c5b",
+  "algorithm": "PTF-PBDOO-fixed-block-optimized-eta-cor1",
+  "candidate": "C",
+  "candidate_runs": 27,
+  "reproduction_checks": 3,
+  "structural_audit": "PASS",
+  "means": {
+    "cycle": [
+      0.7280009659144787,
+      0.5891525110147837,
+      0.4328496791862471
+    ],
+    "grid": [
+      0.6578210913459366,
+      0.5806584836440062,
+      0.44178042282628316
+    ],
+    "complete": [
+      1.1284087536267113,
+      1.047801915440851,
+      0.7074559120875914
+    ]
+  },
+  "horizons": [
+    100000,
+    300000,
+    1000000
+  ],
+  "parameter_selection": "NOT PERFORMED"
+}

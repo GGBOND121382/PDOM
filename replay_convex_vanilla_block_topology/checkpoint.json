@@ -1,0 +1,191 @@
+{
+  "1000000|36|complete|1.0|C|0|3992765393078208805": {
+    "avg_loss_per_round": 23.38846782519971,
+    "avg_regret_per_round": 22.210797675747212,
+    "elapsed_seconds": 306.51429645344615,
+    "mse": 0.2441986054832038,
+    "normalized_regret": 0.6169666021040893
+  },
+  "1000000|36|complete|1.0|C|1|7713825299899637105": {
+    "avg_loss_per_round": 24.020328106881895,
+    "avg_regret_per_round": 22.844377964386403,
+    "elapsed_seconds": 300.55449127964675,
+    "mse": 0.3202806768158335,
+    "normalized_regret": 0.634566054566289
+  },
+  "1000000|36|complete|1.0|C|2|4354145577213463802": {
+    "avg_loss_per_round": 32.52577391652157,
+    "avg_regret_per_round": 31.350062865326247,
+    "elapsed_seconds": 298.71697358042,
+    "mse": 0.6087511079771079,
+    "normalized_regret": 0.8708350795923958
+  },
+  "1000000|36|cycle|1.0|C|0|2426074970911327993": {
+    "avg_loss_per_round": 13.464441753313455,
+    "avg_regret_per_round": 12.286886019598152,
+    "elapsed_seconds": 278.5604387521744,
+    "mse": 0.22087942182816828,
+    "normalized_regret": 0.341302389433282
+  },
+  "1000000|36|cycle|1.0|C|1|126563606692233005": {
+    "avg_loss_per_round": 24.73276312166348,
+    "avg_regret_per_round": 23.55694207215523,
+    "elapsed_seconds": 273.26216411963105,
+    "mse": 0.5809453186514254,
+    "normalized_regret": 0.6543595020043119
+  },
+  "1000000|36|cycle|1.0|C|2|1365543787704360445": {
+    "avg_loss_per_round": 12.07964520501525,
+    "avg_regret_per_round": 10.903937260361307,
+    "elapsed_seconds": 309.5573493819684,
+    "mse": 0.11751594500781992,
+    "normalized_regret": 0.3028871461211474
+  },
+  "1000000|36|grid|1.0|C|0|4864101375448179708": {
+    "avg_loss_per_round": 18.856081627481576,
+    "avg_regret_per_round": 17.677674876290986,
+    "elapsed_seconds": 336.01380920782685,
+    "mse": 0.38153063937114834,
+    "normalized_regret": 0.49104652434141627
+  },
+  "1000000|36|grid|1.0|C|1|6709135131609021515": {
+    "avg_loss_per_round": 16.500401163764504,
+    "avg_regret_per_round": 15.323789432551873,
+    "elapsed_seconds": 279.16116162389517,
+    "mse": 0.24214173396739314,
+    "normalized_regret": 0.42566081757088536
+  },
+  "1000000|36|grid|1.0|C|2|5711242057788413170": {
+    "avg_loss_per_round": 15.887356149036014,
+    "avg_regret_per_round": 14.710821356395723,
+    "elapsed_seconds": 267.2346511185169,
+    "mse": 0.14471675518182808,
+    "normalized_regret": 0.40863392656654784
+  },
+  "100000|36|complete|1.0|C|0|7972538297561506129": {
+    "avg_loss_per_round": 29.773003873847145,
+    "avg_regret_per_round": 28.59878835938936,
+    "elapsed_seconds": 25.65361661463976,
+    "mse": 0.41987704635225953,
+    "normalized_regret": 0.7944107877608155
+  },
+  "100000|36|complete|1.0|C|1|1099957485782373647": {
+    "avg_loss_per_round": 43.31968950138888,
+    "avg_regret_per_round": 42.141382546165914,
+    "elapsed_seconds": 34.971334462985396,
+    "mse": 0.6393457036605986,
+    "normalized_regret": 1.1705939596157198
+  },
+  "100000|36|complete|1.0|C|2|7986646218860443508": {
+    "avg_loss_per_round": 52.3051599823479,
+    "avg_regret_per_round": 51.127974486129546,
+    "elapsed_seconds": 25.797279169782996,
+    "mse": 0.5980809716796894,
+    "normalized_regret": 1.4202215135035985
+  },
+  "100000|36|cycle|1.0|C|0|4542995058444132127": {
+    "avg_loss_per_round": 34.15880871192515,
+    "avg_regret_per_round": 32.98287421736705,
+    "elapsed_seconds": 25.211632903665304,
+    "mse": 0.7086404632673119,
+    "normalized_regret": 0.9161909504824179
+  },
+  "100000|36|cycle|1.0|C|1|8856138818016174014": {
+    "avg_loss_per_round": 23.42679479237413,
+    "avg_regret_per_round": 22.250727947439888,
+    "elapsed_seconds": 34.401139717549086,
+    "mse": 0.36820889430992626,
+    "normalized_regret": 0.6180757763177747
+  },
+  "100000|36|cycle|1.0|C|2|7271801434999059329": {
+    "avg_loss_per_round": 24.567578910111262,
+    "avg_regret_per_round": 23.390502153956763,
+    "elapsed_seconds": 25.147332534193993,
+    "mse": 0.354755738118753,
+    "normalized_regret": 0.6497361709432434
+  },
+  "100000|36|grid|1.0|C|0|2364838120456236631": {
+    "avg_loss_per_round": 21.614977661293562,
+    "avg_regret_per_round": 20.440354165571446,
+    "elapsed_seconds": 26.317021107301116,
+    "mse": 0.27273495116349683,
+    "normalized_regret": 0.5677876157103179
+  },
+  "100000|36|grid|1.0|C|1|8447441215415562338": {
+    "avg_loss_per_round": 21.206912470938025,
+    "avg_regret_per_round": 20.027954144603058,
+    "elapsed_seconds": 27.983004983514547,
+    "mse": 0.11558957491553791,
+    "normalized_regret": 0.5563320595723071
+  },
+  "100000|36|grid|1.0|C|2|8865431194053662779": {
+    "avg_loss_per_round": 31.75687833953838,
+    "avg_regret_per_round": 30.576369555186655,
+    "elapsed_seconds": 24.525521010160446,
+    "mse": 0.6009946399284154,
+    "normalized_regret": 0.8493435987551848
+  },
+  "300000|36|complete|1.0|C|0|2769496564713660303": {
+    "avg_loss_per_round": 49.47184974705663,
+    "avg_regret_per_round": 48.29366669013847,
+    "elapsed_seconds": 83.23857418820262,
+    "mse": 1.038940615810912,
+    "normalized_regret": 1.3414907413927353
+  },
+  "300000|36|complete|1.0|C|1|5601162037695196738": {
+    "avg_loss_per_round": 23.16503885209182,
+    "avg_regret_per_round": 21.990895494592085,
+    "elapsed_seconds": 105.15675968676805,
+    "mse": 0.14890300956174235,
+    "normalized_regret": 0.6108582081831134
+  },
+  "300000|36|complete|1.0|C|2|4942859703477177739": {
+    "avg_loss_per_round": 44.053285992792894,
+    "avg_regret_per_round": 42.878044682881374,
+    "elapsed_seconds": 104.97356483712792,
+    "mse": 0.8498489342676239,
+    "normalized_regret": 1.1910567967467047
+  },
+  "300000|36|cycle|1.0|C|0|701493121860480293": {
+    "avg_loss_per_round": 35.132718522102046,
+    "avg_regret_per_round": 33.9553399574444,
+    "elapsed_seconds": 76.18882003612816,
+    "mse": 0.7806842087689957,
+    "normalized_regret": 0.943203887706789
+  },
+  "300000|36|cycle|1.0|C|1|823265748890385918": {
+    "avg_loss_per_round": 18.136285102140246,
+    "avg_regret_per_round": 16.961855700891817,
+    "elapsed_seconds": 103.38115755096078,
+    "mse": 0.1609933264901785,
+    "normalized_regret": 0.47116265835810606
+  },
+  "300000|36|cycle|1.0|C|2|3322324639559378383": {
+    "avg_loss_per_round": 13.890772814935653,
+    "avg_regret_per_round": 12.711275531260423,
+    "elapsed_seconds": 103.6951747816056,
+    "mse": 0.19703395371611188,
+    "normalized_regret": 0.3530909869794562
+  },
+  "300000|36|grid|1.0|C|0|3252334192073695550": {
+    "avg_loss_per_round": 32.342825702120614,
+    "avg_regret_per_round": 31.16626444021683,
+    "elapsed_seconds": 76.56650283560157,
+    "mse": 0.7081652110832224,
+    "normalized_regret": 0.8657295677838008
+  },
+  "300000|36|grid|1.0|C|1|3334423695862637223": {
+    "avg_loss_per_round": 13.476397666933371,
+    "avg_regret_per_round": 12.300472894880688,
+    "elapsed_seconds": 103.3697671610862,
+    "mse": 0.1974254183578101,
+    "normalized_regret": 0.3416798026355747
+  },
+  "300000|36|grid|1.0|C|2|8419701316764183076": {
+    "avg_loss_per_round": 20.42357033029384,
+    "avg_regret_per_round": 19.24437889845515,
+    "elapsed_seconds": 79.49585362710059,
+    "mse": 0.34617274488282973,
+    "normalized_regret": 0.5345660805126431
+  }
+}
