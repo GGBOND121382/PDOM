@@ -132,13 +132,17 @@ def setup(workspace,spec):
     work=workspace/branch
     if not work.exists():
         git('worktree','add','--detach',str(work),pin)
-    require(git('rev-parse','HEAD',cwd=work)==pin and not git('status','--porcelain','--untracked-files=no',cwd=work),
-            f'{work}: use original pinned worktree without tracked changes')
+    local_head=git('rev-parse','HEAD',cwd=work)
+    require(subprocess.run(['git','merge-base','--is-ancestor',pin,local_head],cwd=work).returncode==0,'Local worktree diverged')
+    local_changes=git('diff','--name-only',pin,local_head,cwd=work).splitlines()
+    require(all(x.startswith(spec['prefix']+'_topology/') for x in local_changes) and not git('status','--porcelain','--untracked-files=no',cwd=work),
+            f'{work}: tracked code must match the pinned diagnosis')
     return work,head
 
 def materialize_sources(work,head,spec,stage):
     # Local topology results may be unpushed; prefer complete committed output
     # if available. Never read an actively running checkpoint.
+    provenance={}
     for scope,suffix in [('epsilon','eps'),('topology','topology')]:
         dirname=spec['prefix']+'_'+suffix
         dest=stage/scope
@@ -156,6 +160,7 @@ def materialize_sources(work,head,spec,stage):
             require(set(names)<=set(chosen),'Missing completed epsilon diagnosis')
         if not chosen:
             continue
+        provenance[scope]={'kind':'remote' if chosen is remote else 'local','commit':head if chosen is remote else git('rev-parse','HEAD',cwd=work),'directory':dirname}
         require({'manifest.json','checkpoint.json','parameter_validation.csv','archive_reproduction.csv'}<=set(chosen),
                 f'Incomplete provenance for {dirname}; finish or stop diagnostic cleanly before replay')
         for n,b in chosen.items():
@@ -166,6 +171,11 @@ def materialize_sources(work,head,spec,stage):
                 p.write_bytes(b)
         # Avoid silently switching between staged and unstaged source state.
         require({p.name for p in dest.iterdir()}==set(chosen),f'Staged source file set changed: {dest}')
+    provenance_path=stage/'provenance.json'
+    if provenance_path.exists():
+        require(json.loads(provenance_path.read_text())==provenance,'Source provenance changed; use fresh output')
+    else:
+        atomic(provenance_path,provenance)
 
 def load_module(work,spec):
     sys.path.insert(0,str(work))
@@ -212,7 +222,7 @@ def verified_import(work,spec,mod,target,params,stage):
             p=params[config(r)]
             q=ptable[config(r)]
             for name,value in p.items():
-                require(name in q and (str(value)==q[name] if isinstance(value,bool) else close(value,q[name])),f'Parameter mismatch {name}: {config(r)}')
+                require(name in q and (str(value)==q[name] if name=='cap_active' else close(value,q[name])),f'Parameter mismatch {name}: {config(r)}')
         final={}
         if (src/'runs.csv').exists():
             rr=read_csv((src/'runs.csv').read_bytes())
@@ -238,7 +248,7 @@ def verified_import(work,spec,mod,target,params,stage):
                 require(identity(fr)==k and close(fr['archived_normalized_regret'],float(r['avg_regret_per_round'])/int(r['num_nodes'])),'Diagnostic source row mismatch')
             require(k not in imported,'Duplicate reused record')
             imported[k]=z
-            audit.append(dict(identity=k,scope=scope,source=spec['prefix']+'_'+suffix,source_commit=spec['pin'],
+            audit.append(dict(identity=k,scope=scope,source=spec['prefix']+'_'+suffix,code_commit=spec['pin'],source_commit=json.loads((stage/'provenance.json').read_text())[scope]['commit'],
                               source_manifest_sha256=sha((src/'manifest.json').read_bytes()),
                               source_checkpoint_sha256=sha((src/'checkpoint.json').read_bytes()),
                               **z))
