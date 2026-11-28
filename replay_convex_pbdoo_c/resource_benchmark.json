@@ -1,0 +1,9 @@
+{
+  "mode": "manual",
+  "resources": {
+    "available_bytes": 5893414912,
+    "cpu_effective": 4.0,
+    "logical_cpu": 4
+  },
+  "selected": 4
+}

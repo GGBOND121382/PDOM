@@ -1,0 +1,2102 @@
+{
+  "impact_epsilon_and_T_alpha0_runs.csv:10": {
+    "avg_loss_per_round": 56.97793728627037,
+    "avg_regret_per_round": 56.68313488324883,
+    "mse": 0.5835848134274925
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:11": {
+    "avg_loss_per_round": 61.12465395349515,
+    "avg_regret_per_round": 60.819287205657396,
+    "mse": 1.109362001575875
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:110": {
+    "avg_loss_per_round": 58.64827149274868,
+    "avg_regret_per_round": 58.35477454615878,
+    "mse": 0.8710171866887543
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:111": {
+    "avg_loss_per_round": 60.39294242888166,
+    "avg_regret_per_round": 60.09977265165669,
+    "mse": 1.0768118513803004
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:112": {
+    "avg_loss_per_round": 60.91609617638217,
+    "avg_regret_per_round": 60.62207114754865,
+    "mse": 1.1311798339364412
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:113": {
+    "avg_loss_per_round": 60.575222675916024,
+    "avg_regret_per_round": 60.28163481494866,
+    "mse": 1.0797230152519548
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:114": {
+    "avg_loss_per_round": 67.49299569925772,
+    "avg_regret_per_round": 67.19861677110262,
+    "mse": 1.8019278393954203
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:115": {
+    "avg_loss_per_round": 66.04224416240943,
+    "avg_regret_per_round": 65.74965422516442,
+    "mse": 1.6823965313625868
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:116": {
+    "avg_loss_per_round": 55.20836532773975,
+    "avg_regret_per_round": 54.914205853431476,
+    "mse": 0.4713275143464754
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:117": {
+    "avg_loss_per_round": 57.15246248952478,
+    "avg_regret_per_round": 56.85851295328536,
+    "mse": 0.702660707725973
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:118": {
+    "avg_loss_per_round": 59.684884101030626,
+    "avg_regret_per_round": 59.39023257817884,
+    "mse": 0.9967196458750754
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:119": {
+    "avg_loss_per_round": 60.453085330552824,
+    "avg_regret_per_round": 60.157962840405254,
+    "mse": 1.0859602093575493
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:12": {
+    "avg_loss_per_round": 59.42083791453125,
+    "avg_regret_per_round": 59.112993325139094,
+    "mse": 0.8737735782078759
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:13": {
+    "avg_loss_per_round": 57.43930441346608,
+    "avg_regret_per_round": 57.167065439626754,
+    "mse": 0.6219964471337464
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:130": {
+    "avg_loss_per_round": 55.42614948393706,
+    "avg_regret_per_round": 55.13198577851401,
+    "mse": 2.23197533908611
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:131": {
+    "avg_loss_per_round": 52.1099630290107,
+    "avg_regret_per_round": 51.81552981636928,
+    "mse": 1.8949714103136879
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:132": {
+    "avg_loss_per_round": 46.45332850232656,
+    "avg_regret_per_round": 46.15946035272246,
+    "mse": 1.1972946976388148
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:133": {
+    "avg_loss_per_round": 67.43864578400895,
+    "avg_regret_per_round": 67.14441653183158,
+    "mse": 3.4739736804315307
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:134": {
+    "avg_loss_per_round": 42.378397865014136,
+    "avg_regret_per_round": 42.084848614460306,
+    "mse": 0.87748966639438
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:135": {
+    "avg_loss_per_round": 54.607576951814984,
+    "avg_regret_per_round": 54.31321579138284,
+    "mse": 2.2141116983455844
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:136": {
+    "avg_loss_per_round": 46.38064860736259,
+    "avg_regret_per_round": 46.086460964530275,
+    "mse": 1.2545509040753504
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:137": {
+    "avg_loss_per_round": 47.13770226288187,
+    "avg_regret_per_round": 46.844352243759005,
+    "mse": 1.0728821116402203
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:138": {
+    "avg_loss_per_round": 46.224368045635366,
+    "avg_regret_per_round": 45.93013881914173,
+    "mse": 1.1589321590028883
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:139": {
+    "avg_loss_per_round": 45.98231252123902,
+    "avg_regret_per_round": 45.68885018394786,
+    "mse": 1.0467414457507591
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:14": {
+    "avg_loss_per_round": 67.68996887711913,
+    "avg_regret_per_round": 67.4271093869579,
+    "mse": 1.5744584508757213
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:140": {
+    "avg_loss_per_round": 63.35006053922728,
+    "avg_regret_per_round": 63.05460829818164,
+    "mse": 1.2789029537552399
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:141": {
+    "avg_loss_per_round": 57.94139756320575,
+    "avg_regret_per_round": 57.672538623636434,
+    "mse": 0.6643578462779096
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:142": {
+    "avg_loss_per_round": 63.95732392852552,
+    "avg_regret_per_round": 63.664778072353606,
+    "mse": 1.3343828195923664
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:143": {
+    "avg_loss_per_round": 62.5416382691296,
+    "avg_regret_per_round": 62.22407305219761,
+    "mse": 1.084576691113799
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:144": {
+    "avg_loss_per_round": 63.028858188670604,
+    "avg_regret_per_round": 62.74985438331259,
+    "mse": 1.2334937734153812
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:145": {
+    "avg_loss_per_round": 63.159624381971675,
+    "avg_regret_per_round": 62.842103203768666,
+    "mse": 1.247564022062258
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:146": {
+    "avg_loss_per_round": 65.04688920199628,
+    "avg_regret_per_round": 64.75923500098237,
+    "mse": 1.351689457548429
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:147": {
+    "avg_loss_per_round": 62.11819960318709,
+    "avg_regret_per_round": 61.82789712256146,
+    "mse": 1.1691890018622726
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:148": {
+    "avg_loss_per_round": 58.6018728408808,
+    "avg_regret_per_round": 58.29768356669547,
+    "mse": 0.749371669761145
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:149": {
+    "avg_loss_per_round": 58.1187442218438,
+    "avg_regret_per_round": 57.845021777659476,
+    "mse": 0.6896919809615115
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:15": {
+    "avg_loss_per_round": 58.73237687253781,
+    "avg_regret_per_round": 58.440533897549194,
+    "mse": 0.7255162126539779
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:150": {
+    "avg_loss_per_round": 61.12454977570609,
+    "avg_regret_per_round": 60.8234458821573,
+    "mse": 1.0576264648013864
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:151": {
+    "avg_loss_per_round": 61.0299453798704,
+    "avg_regret_per_round": 60.752652247386514,
+    "mse": 1.0730463372143535
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:152": {
+    "avg_loss_per_round": 64.70970716348448,
+    "avg_regret_per_round": 64.41699148788875,
+    "mse": 1.4089103719553893
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:153": {
+    "avg_loss_per_round": 61.7306639408548,
+    "avg_regret_per_round": 61.43597267983205,
+    "mse": 1.1980861825160778
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:154": {
+    "avg_loss_per_round": 60.38330935626704,
+    "avg_regret_per_round": 60.09112473157602,
+    "mse": 1.0031522953115364
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:155": {
+    "avg_loss_per_round": 62.12777521116086,
+    "avg_regret_per_round": 61.83389048190781,
+    "mse": 1.1695925315405769
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:156": {
+    "avg_loss_per_round": 61.26079370461361,
+    "avg_regret_per_round": 60.97096876427534,
+    "mse": 1.0363078483145818
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:157": {
+    "avg_loss_per_round": 62.426080387614626,
+    "avg_regret_per_round": 62.13068013790966,
+    "mse": 1.244386179794154
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:158": {
+    "avg_loss_per_round": 61.07240646356806,
+    "avg_regret_per_round": 60.776292851160996,
+    "mse": 1.0420627671947869
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:159": {
+    "avg_loss_per_round": 60.71316776695204,
+    "avg_regret_per_round": 60.410394112975084,
+    "mse": 0.9850144250327877
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:16": {
+    "avg_loss_per_round": 63.464075858045554,
+    "avg_regret_per_round": 63.155965248410666,
+    "mse": 1.179798657762107
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:160": {
+    "avg_loss_per_round": 44.55008497313115,
+    "avg_regret_per_round": 44.25195910352709,
+    "mse": 1.1074120357694759
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:161": {
+    "avg_loss_per_round": 40.2216808380518,
+    "avg_regret_per_round": 39.925705391130215,
+    "mse": 0.6463796139166573
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:162": {
+    "avg_loss_per_round": 39.8641071262557,
+    "avg_regret_per_round": 39.571083954377606,
+    "mse": 0.5689648663404749
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:163": {
+    "avg_loss_per_round": 42.30736148477015,
+    "avg_regret_per_round": 42.01234306240634,
+    "mse": 0.8867064113605755
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:164": {
+    "avg_loss_per_round": 50.97945044843944,
+    "avg_regret_per_round": 50.68193370973139,
+    "mse": 1.8479503332802638
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:165": {
+    "avg_loss_per_round": 46.96494553571132,
+    "avg_regret_per_round": 46.66737120416855,
+    "mse": 1.398191551688732
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:166": {
+    "avg_loss_per_round": 45.89451360469389,
+    "avg_regret_per_round": 45.60656431087118,
+    "mse": 1.244849843781915
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:167": {
+    "avg_loss_per_round": 40.69443225893896,
+    "avg_regret_per_round": 40.40761960684196,
+    "mse": 0.701418996977033
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:168": {
+    "avg_loss_per_round": 44.9818422169669,
+    "avg_regret_per_round": 44.687350730897194,
+    "mse": 1.1410416844364646
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:169": {
+    "avg_loss_per_round": 41.68511632226409,
+    "avg_regret_per_round": 41.38795471006118,
+    "mse": 0.7947711809802828
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:17": {
+    "avg_loss_per_round": 66.07882199073377,
+    "avg_regret_per_round": 65.80579651007876,
+    "mse": 1.5041203547913116
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:170": {
+    "avg_loss_per_round": 37.27968860256035,
+    "avg_regret_per_round": 36.981524730643265,
+    "mse": 1.4774798010681196
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:171": {
+    "avg_loss_per_round": 27.71509314056309,
+    "avg_regret_per_round": 27.419700436257017,
+    "mse": 0.40034907165082073
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:172": {
+    "avg_loss_per_round": 31.363404501200073,
+    "avg_regret_per_round": 31.069619637979436,
+    "mse": 0.8167658996884305
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:173": {
+    "avg_loss_per_round": 29.82989260916714,
+    "avg_regret_per_round": 29.535608810618164,
+    "mse": 0.642762863703373
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:174": {
+    "avg_loss_per_round": 37.81127131883876,
+    "avg_regret_per_round": 37.52094947088157,
+    "mse": 1.547791424778002
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:175": {
+    "avg_loss_per_round": 34.85608730309127,
+    "avg_regret_per_round": 34.558009568321026,
+    "mse": 1.2067980387720183
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:176": {
+    "avg_loss_per_round": 32.867586129783795,
+    "avg_regret_per_round": 32.574236777948556,
+    "mse": 0.9705316763997004
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:177": {
+    "avg_loss_per_round": 34.513326664046566,
+    "avg_regret_per_round": 34.21906693420144,
+    "mse": 1.1755749164277212
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:178": {
+    "avg_loss_per_round": 29.091693236392224,
+    "avg_regret_per_round": 28.793377657938223,
+    "mse": 0.5810275968082577
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:179": {
+    "avg_loss_per_round": 33.258286604022025,
+    "avg_regret_per_round": 32.962409321120845,
+    "mse": 1.0277585085189593
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:18": {
+    "avg_loss_per_round": 57.59984015849589,
+    "avg_regret_per_round": 57.284692181239926,
+    "mse": 0.6163371051613502
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:180": {
+    "avg_loss_per_round": 21.66748027853245,
+    "avg_regret_per_round": 21.37335139508023,
+    "mse": 0.5700910078004913
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:181": {
+    "avg_loss_per_round": 26.474331683366284,
+    "avg_regret_per_round": 26.18057842366004,
+    "mse": 1.148862105069752
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:182": {
+    "avg_loss_per_round": 23.64183242263114,
+    "avg_regret_per_round": 23.348690579157577,
+    "mse": 0.8206770562982704
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:183": {
+    "avg_loss_per_round": 30.573119855788665,
+    "avg_regret_per_round": 30.277654611332327,
+    "mse": 1.5380600277855179
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:184": {
+    "avg_loss_per_round": 22.159491917124427,
+    "avg_regret_per_round": 21.86544722478625,
+    "mse": 0.6492292388719247
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:185": {
+    "avg_loss_per_round": 20.393482752717368,
+    "avg_regret_per_round": 20.098764236401152,
+    "mse": 0.4582836613676841
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:186": {
+    "avg_loss_per_round": 22.138249041258476,
+    "avg_regret_per_round": 21.843198689026693,
+    "mse": 0.6379122595091922
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:187": {
+    "avg_loss_per_round": 22.315471025933178,
+    "avg_regret_per_round": 22.020333647866163,
+    "mse": 0.5953135959245536
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:188": {
+    "avg_loss_per_round": 26.52807496472948,
+    "avg_regret_per_round": 26.233936533331065,
+    "mse": 1.140894700765508
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:189": {
+    "avg_loss_per_round": 25.133010399393424,
+    "avg_regret_per_round": 24.838242981367753,
+    "mse": 0.969465093158777
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:19": {
+    "avg_loss_per_round": 60.71500629663244,
+    "avg_regret_per_round": 60.43554765462021,
+    "mse": 0.9603922619525036
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:190": {
+    "avg_loss_per_round": 25.66959717236622,
+    "avg_regret_per_round": 25.37463276452102,
+    "mse": 1.5686160391484059
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:191": {
+    "avg_loss_per_round": 13.543941065271817,
+    "avg_regret_per_round": 13.250687120274158,
+    "mse": 0.24066211995848574
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:192": {
+    "avg_loss_per_round": 16.5124834152869,
+    "avg_regret_per_round": 16.218608768667185,
+    "mse": 0.4893941663940766
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:193": {
+    "avg_loss_per_round": 23.582632972332714,
+    "avg_regret_per_round": 23.288828065683205,
+    "mse": 1.3547542645709472
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:194": {
+    "avg_loss_per_round": 19.190474615332313,
+    "avg_regret_per_round": 18.89646480686431,
+    "mse": 0.871086700518553
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:195": {
+    "avg_loss_per_round": 18.265854938560715,
+    "avg_regret_per_round": 17.971739116963956,
+    "mse": 0.7135778492647479
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:196": {
+    "avg_loss_per_round": 15.770856938607448,
+    "avg_regret_per_round": 15.476374423959244,
+    "mse": 0.5005403549728243
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:197": {
+    "avg_loss_per_round": 23.047239389325153,
+    "avg_regret_per_round": 22.75291604119941,
+    "mse": 1.2889659222134653
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:198": {
+    "avg_loss_per_round": 22.44828328924582,
+    "avg_regret_per_round": 22.154479656358312,
+    "mse": 1.2043245105470406
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:199": {
+    "avg_loss_per_round": 19.059150567651162,
+    "avg_regret_per_round": 18.764037043624807,
+    "mse": 0.8472908108479433
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:200": {
+    "avg_loss_per_round": 13.782596065365695,
+    "avg_regret_per_round": 13.487891112896328,
+    "mse": 0.5482342147299171
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:201": {
+    "avg_loss_per_round": 14.455720787905934,
+    "avg_regret_per_round": 14.1616456102238,
+    "mse": 0.6973184133051212
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:202": {
+    "avg_loss_per_round": 12.159270368997522,
+    "avg_regret_per_round": 11.864960431324134,
+    "mse": 0.4377857184704988
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:203": {
+    "avg_loss_per_round": 18.010440744409248,
+    "avg_regret_per_round": 17.71677683962877,
+    "mse": 1.0790801889487387
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:204": {
+    "avg_loss_per_round": 12.577803878088707,
+    "avg_regret_per_round": 12.28430662926184,
+    "mse": 0.5159458351808482
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:205": {
+    "avg_loss_per_round": 19.812983281905396,
+    "avg_regret_per_round": 19.519058614464363,
+    "mse": 1.3045934571072744
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:206": {
+    "avg_loss_per_round": 16.19254040107977,
+    "avg_regret_per_round": 15.898840827734375,
+    "mse": 0.9112688010685112
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:207": {
+    "avg_loss_per_round": 14.695011375884496,
+    "avg_regret_per_round": 14.400192194651558,
+    "mse": 0.7585675607416739
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:208": {
+    "avg_loss_per_round": 29.959530847900854,
+    "avg_regret_per_round": 29.665255469354317,
+    "mse": 2.3955020037396477
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:209": {
+    "avg_loss_per_round": 35.332721363419154,
+    "avg_regret_per_round": 35.039297361732025,
+    "mse": 3.04553812148296
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:210": {
+    "avg_loss_per_round": 27.642310047019443,
+    "avg_regret_per_round": 27.3453232545059,
+    "mse": 1.0341673290557154
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:211": {
+    "avg_loss_per_round": 28.173497311872698,
+    "avg_regret_per_round": 27.89996213397093,
+    "mse": 1.1298028840867058
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:212": {
+    "avg_loss_per_round": 27.831560559440447,
+    "avg_regret_per_round": 27.51067917982531,
+    "mse": 1.0723930765083065
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:213": {
+    "avg_loss_per_round": 27.877309320751763,
+    "avg_regret_per_round": 27.604781765928596,
+    "mse": 1.0689336574649448
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:214": {
+    "avg_loss_per_round": 28.12232680695503,
+    "avg_regret_per_round": 27.823600247392324,
+    "mse": 1.1202699190097944
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:215": {
+    "avg_loss_per_round": 28.058567904432774,
+    "avg_regret_per_round": 27.764527401851353,
+    "mse": 1.0888959689122653
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:216": {
+    "avg_loss_per_round": 27.883013100263934,
+    "avg_regret_per_round": 27.584494947101152,
+    "mse": 1.08923112224578
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:217": {
+    "avg_loss_per_round": 27.983409006612984,
+    "avg_regret_per_round": 27.698890616419856,
+    "mse": 1.0754644316713653
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:218": {
+    "avg_loss_per_round": 28.71852927615888,
+    "avg_regret_per_round": 28.421501786627605,
+    "mse": 1.1671724436946078
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:219": {
+    "avg_loss_per_round": 27.962056941977725,
+    "avg_regret_per_round": 27.649774287140293,
+    "mse": 1.125584208041055
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:220": {
+    "avg_loss_per_round": 21.728580565028036,
+    "avg_regret_per_round": 21.434854690124403,
+    "mse": 1.0272161322715565
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:221": {
+    "avg_loss_per_round": 22.797891710460902,
+    "avg_regret_per_round": 22.5002507776243,
+    "mse": 1.1108394139109192
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:222": {
+    "avg_loss_per_round": 23.029513275893642,
+    "avg_regret_per_round": 22.727279537108135,
+    "mse": 1.129681473700326
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:223": {
+    "avg_loss_per_round": 22.290829895281924,
+    "avg_regret_per_round": 22.00159569729578,
+    "mse": 1.0786804776925534
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:224": {
+    "avg_loss_per_round": 22.433954587677075,
+    "avg_regret_per_round": 22.146415011755263,
+    "mse": 1.1064610042370318
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:225": {
+    "avg_loss_per_round": 22.420127112570242,
+    "avg_regret_per_round": 22.119500479773677,
+    "mse": 1.0905522436059578
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:226": {
+    "avg_loss_per_round": 23.35628474710445,
+    "avg_regret_per_round": 23.0623437436993,
+    "mse": 1.164327209742145
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:227": {
+    "avg_loss_per_round": 22.03813962800076,
+    "avg_regret_per_round": 21.737299591016658,
+    "mse": 1.058254678496702
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:228": {
+    "avg_loss_per_round": 23.013350500652106,
+    "avg_regret_per_round": 22.718919071231827,
+    "mse": 1.1681996091656077
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:229": {
+    "avg_loss_per_round": 22.07724231389907,
+    "avg_regret_per_round": 21.7827849084325,
+    "mse": 1.0640773881978278
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:230": {
+    "avg_loss_per_round": 18.055700824943575,
+    "avg_regret_per_round": 17.755451689807074,
+    "mse": 1.0661558287794182
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:231": {
+    "avg_loss_per_round": 17.64903757768451,
+    "avg_regret_per_round": 17.356120659269443,
+    "mse": 1.0121995486146218
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:232": {
+    "avg_loss_per_round": 17.96011383445943,
+    "avg_regret_per_round": 17.66761103405013,
+    "mse": 1.0501185854929218
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:233": {
+    "avg_loss_per_round": 18.82379983734404,
+    "avg_regret_per_round": 18.527323308328196,
+    "mse": 1.1621419514675224
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:234": {
+    "avg_loss_per_round": 18.487903602308204,
+    "avg_regret_per_round": 18.192293626121643,
+    "mse": 1.1111731801219298
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:235": {
+    "avg_loss_per_round": 17.609644794456667,
+    "avg_regret_per_round": 17.317876927758643,
+    "mse": 1.0196569378481963
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:236": {
+    "avg_loss_per_round": 17.96180147255691,
+    "avg_regret_per_round": 17.665281307206193,
+    "mse": 1.053791191499187
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:237": {
+    "avg_loss_per_round": 18.02817888875748,
+    "avg_regret_per_round": 17.734211404628446,
+    "mse": 1.0645268223589421
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:238": {
+    "avg_loss_per_round": 18.554241451202667,
+    "avg_regret_per_round": 18.26227047118819,
+    "mse": 1.1179916573709692
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:239": {
+    "avg_loss_per_round": 18.46391376673618,
+    "avg_regret_per_round": 18.169660500370043,
+    "mse": 1.116308560405349
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:240": {
+    "avg_loss_per_round": 14.814463229459049,
+    "avg_regret_per_round": 14.518722174221969,
+    "mse": 0.989638040697307
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:241": {
+    "avg_loss_per_round": 15.438268012862126,
+    "avg_regret_per_round": 15.145581221671826,
+    "mse": 1.0627919196073454
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:242": {
+    "avg_loss_per_round": 14.949762724932878,
+    "avg_regret_per_round": 14.650640107167249,
+    "mse": 1.001542166949093
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:243": {
+    "avg_loss_per_round": 15.42451579278817,
+    "avg_regret_per_round": 15.133734487177858,
+    "mse": 1.0589767891401642
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:244": {
+    "avg_loss_per_round": 15.99855656344643,
+    "avg_regret_per_round": 15.708283578740147,
+    "mse": 1.1298166587876413
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:245": {
+    "avg_loss_per_round": 15.094399369000763,
+    "avg_regret_per_round": 14.802692780771155,
+    "mse": 1.0274592989996025
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:246": {
+    "avg_loss_per_round": 15.519893525163813,
+    "avg_regret_per_round": 15.2188341736182,
+    "mse": 1.0749927797500058
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:247": {
+    "avg_loss_per_round": 15.786593167188384,
+    "avg_regret_per_round": 15.490768660166637,
+    "mse": 1.0977995562126763
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:248": {
+    "avg_loss_per_round": 15.463063460883024,
+    "avg_regret_per_round": 15.17063434700631,
+    "mse": 1.063507784563669
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:249": {
+    "avg_loss_per_round": 14.260813228620032,
+    "avg_regret_per_round": 13.967923043904335,
+    "mse": 0.9292791031763086
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:250": {
+    "avg_loss_per_round": 12.468089023611308,
+    "avg_regret_per_round": 12.173702126345889,
+    "mse": 0.9466864692880097
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:251": {
+    "avg_loss_per_round": 11.748029377959906,
+    "avg_regret_per_round": 11.454886385772658,
+    "mse": 0.8633799434392708
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:252": {
+    "avg_loss_per_round": 11.57897256235789,
+    "avg_regret_per_round": 11.285129724348272,
+    "mse": 0.8466454003048977
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:253": {
+    "avg_loss_per_round": 13.060822332876723,
+    "avg_regret_per_round": 12.766451906416238,
+    "mse": 1.0111941770832076
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:254": {
+    "avg_loss_per_round": 12.538736328389056,
+    "avg_regret_per_round": 12.24395639318156,
+    "mse": 0.955477658646402
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:255": {
+    "avg_loss_per_round": 11.638304921256266,
+    "avg_regret_per_round": 11.346970975370281,
+    "mse": 0.8573385267615117
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:256": {
+    "avg_loss_per_round": 11.823305916379459,
+    "avg_regret_per_round": 11.529554827526193,
+    "mse": 0.8749441833996988
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:257": {
+    "avg_loss_per_round": 12.621553484228277,
+    "avg_regret_per_round": 12.327535156502217,
+    "mse": 0.9625398367543957
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:258": {
+    "avg_loss_per_round": 12.603562785899529,
+    "avg_regret_per_round": 12.309551130544413,
+    "mse": 0.9598902700743523
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:259": {
+    "avg_loss_per_round": 11.113787077366103,
+    "avg_regret_per_round": 10.818877881778423,
+    "mse": 0.7953795771309653
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:260": {
+    "avg_loss_per_round": 11.214228144120579,
+    "avg_regret_per_round": 10.920568839757749,
+    "mse": 0.9368650516944699
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:261": {
+    "avg_loss_per_round": 10.193941239584676,
+    "avg_regret_per_round": 9.89932684416341,
+    "mse": 0.8230603678311567
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:262": {
+    "avg_loss_per_round": 11.456705842784308,
+    "avg_regret_per_round": 11.16175187296255,
+    "mse": 0.9621642253513427
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:263": {
+    "avg_loss_per_round": 11.178893388198,
+    "avg_regret_per_round": 10.884453812465122,
+    "mse": 0.9391162762114117
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:264": {
+    "avg_loss_per_round": 9.18638983764226,
+    "avg_regret_per_round": 8.89336242137895,
+    "mse": 0.7116367825161978
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:265": {
+    "avg_loss_per_round": 10.536866516883926,
+    "avg_regret_per_round": 10.243094656898412,
+    "mse": 0.8656286419511133
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:266": {
+    "avg_loss_per_round": 9.975571702895492,
+    "avg_regret_per_round": 9.68219084243508,
+    "mse": 0.8007048953344762
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:267": {
+    "avg_loss_per_round": 9.836329211927596,
+    "avg_regret_per_round": 9.542577673113861,
+    "mse": 0.7875350472852856
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:268": {
+    "avg_loss_per_round": 10.424294078080084,
+    "avg_regret_per_round": 10.130652424981797,
+    "mse": 0.85117190535379
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:269": {
+    "avg_loss_per_round": 9.554696626548697,
+    "avg_regret_per_round": 9.261002460611088,
+    "mse": 0.7500650413134062
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:270": {
+    "avg_loss_per_round": 8.513221438353211,
+    "avg_regret_per_round": 8.218285743915956,
+    "mse": 0.7347339003134838
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:271": {
+    "avg_loss_per_round": 8.853621125903441,
+    "avg_regret_per_round": 8.560011835714809,
+    "mse": 0.7791284969757355
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:272": {
+    "avg_loss_per_round": 8.636366196751677,
+    "avg_regret_per_round": 8.342146432804089,
+    "mse": 0.738037714265583
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:273": {
+    "avg_loss_per_round": 7.778592022551335,
+    "avg_regret_per_round": 7.484224872776522,
+    "mse": 0.6488011016210045
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:274": {
+    "avg_loss_per_round": 7.946304754787003,
+    "avg_regret_per_round": 7.651369958058938,
+    "mse": 0.6663927879478667
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:275": {
+    "avg_loss_per_round": 7.2613757370296605,
+    "avg_regret_per_round": 6.967353074143756,
+    "mse": 0.5936605461986548
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:276": {
+    "avg_loss_per_round": 7.8314561747081575,
+    "avg_regret_per_round": 7.537421124665098,
+    "mse": 0.6576474729986367
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:277": {
+    "avg_loss_per_round": 8.388004412498697,
+    "avg_regret_per_round": 8.09423090497319,
+    "mse": 0.7259360181149219
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:278": {
+    "avg_loss_per_round": 9.082136780634835,
+    "avg_regret_per_round": 8.787647309218908,
+    "mse": 0.7948261006844816
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:279": {
+    "avg_loss_per_round": 8.594691196667428,
+    "avg_regret_per_round": 8.300075136541697,
+    "mse": 0.746930052069869
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:30": {
+    "avg_loss_per_round": 64.27247395524924,
+    "avg_regret_per_round": 63.972100778270715,
+    "mse": 1.3248872767141384
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:31": {
+    "avg_loss_per_round": 59.95872498336099,
+    "avg_regret_per_round": 59.66525570504278,
+    "mse": 0.8558916969185234
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:32": {
+    "avg_loss_per_round": 65.19669822517409,
+    "avg_regret_per_round": 64.91719439955274,
+    "mse": 1.4690425322265896
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:33": {
+    "avg_loss_per_round": 59.090351955060115,
+    "avg_regret_per_round": 58.79079180734399,
+    "mse": 0.7064830433283272
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:34": {
+    "avg_loss_per_round": 59.04821174613824,
+    "avg_regret_per_round": 58.76026607024428,
+    "mse": 0.7881315498291621
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:35": {
+    "avg_loss_per_round": 66.56224205669928,
+    "avg_regret_per_round": 66.27865522201273,
+    "mse": 1.5857374521525096
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:36": {
+    "avg_loss_per_round": 63.078348118280964,
+    "avg_regret_per_round": 62.77412432289827,
+    "mse": 1.2170358465497157
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:37": {
+    "avg_loss_per_round": 60.52273818026746,
+    "avg_regret_per_round": 60.23474139777491,
+    "mse": 0.9397046230646203
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:38": {
+    "avg_loss_per_round": 61.11405904280709,
+    "avg_regret_per_round": 60.81949249381132,
+    "mse": 1.0027687956071212
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:39": {
+    "avg_loss_per_round": 60.38725229753707,
+    "avg_regret_per_round": 60.09574037985183,
+    "mse": 0.9081592405351387
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:50": {
+    "avg_loss_per_round": 59.69825979729717,
+    "avg_regret_per_round": 59.403689125473804,
+    "mse": 0.7997829097687639
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:51": {
+    "avg_loss_per_round": 59.16098483817998,
+    "avg_regret_per_round": 58.87077603899755,
+    "mse": 0.7575763137310426
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:52": {
+    "avg_loss_per_round": 63.824813519686266,
+    "avg_regret_per_round": 63.52276160933999,
+    "mse": 1.2590168267531188
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:53": {
+    "avg_loss_per_round": 62.114876519637306,
+    "avg_regret_per_round": 61.819341967491894,
+    "mse": 1.069242335560505
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:54": {
+    "avg_loss_per_round": 65.42489120090549,
+    "avg_regret_per_round": 65.12465578286708,
+    "mse": 1.4571219784912404
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:55": {
+    "avg_loss_per_round": 55.17900023126361,
+    "avg_regret_per_round": 54.88468670284853,
+    "mse": 0.36700961302925195
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:56": {
+    "avg_loss_per_round": 62.504159551962225,
+    "avg_regret_per_round": 62.21883941170772,
+    "mse": 1.1322636364690057
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:57": {
+    "avg_loss_per_round": 57.35078735644488,
+    "avg_regret_per_round": 57.047798269255324,
+    "mse": 0.5783662012425019
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:58": {
+    "avg_loss_per_round": 64.58818711350455,
+    "avg_regret_per_round": 64.29871575174134,
+    "mse": 1.3930694065841325
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:59": {
+    "avg_loss_per_round": 61.80294928033183,
+    "avg_regret_per_round": 61.512480562260194,
+    "mse": 1.0186487595253957
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:70": {
+    "avg_loss_per_round": 60.37117454577243,
+    "avg_regret_per_round": 60.07624522467294,
+    "mse": 0.8477046036127894
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:71": {
+    "avg_loss_per_round": 60.54345248505203,
+    "avg_regret_per_round": 60.247272368086016,
+    "mse": 0.9089387445585151
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:72": {
+    "avg_loss_per_round": 58.19261803526708,
+    "avg_regret_per_round": 57.895744359062135,
+    "mse": 0.6681393459190367
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:73": {
+    "avg_loss_per_round": 65.99022596026104,
+    "avg_regret_per_round": 65.69602088901462,
+    "mse": 1.5290784694619426
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:74": {
+    "avg_loss_per_round": 64.63527492512327,
+    "avg_regret_per_round": 64.34328477206954,
+    "mse": 1.3893066793239304
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:75": {
+    "avg_loss_per_round": 61.799633237044,
+    "avg_regret_per_round": 61.50464357742076,
+    "mse": 1.0288214818313783
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:76": {
+    "avg_loss_per_round": 59.32633076688778,
+    "avg_regret_per_round": 59.02914774405418,
+    "mse": 0.7885666395382805
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:77": {
+    "avg_loss_per_round": 63.37544795441923,
+    "avg_regret_per_round": 63.07970218653086,
+    "mse": 1.2380158272310602
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:78": {
+    "avg_loss_per_round": 59.20224498148603,
+    "avg_regret_per_round": 58.90640801111226,
+    "mse": 0.7958997481283523
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:79": {
+    "avg_loss_per_round": 63.542329274274366,
+    "avg_regret_per_round": 63.25384724595051,
+    "mse": 1.2613149113627264
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:90": {
+    "avg_loss_per_round": 60.23191527211949,
+    "avg_regret_per_round": 59.934189362755625,
+    "mse": 0.8574407920023926
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:91": {
+    "avg_loss_per_round": 61.27988289572146,
+    "avg_regret_per_round": 60.98646484679966,
+    "mse": 0.9782757203605725
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:92": {
+    "avg_loss_per_round": 58.04818583880678,
+    "avg_regret_per_round": 57.75491970453486,
+    "mse": 0.6503512417864423
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:93": {
+    "avg_loss_per_round": 65.50977501840046,
+    "avg_regret_per_round": 65.21568951041623,
+    "mse": 1.47991709108959
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:94": {
+    "avg_loss_per_round": 59.541613388872115,
+    "avg_regret_per_round": 59.245292599781834,
+    "mse": 0.8223744345653373
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:95": {
+    "avg_loss_per_round": 64.2993896088279,
+    "avg_regret_per_round": 64.00770975014066,
+    "mse": 1.3287801279435931
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:96": {
+    "avg_loss_per_round": 61.46762671213777,
+    "avg_regret_per_round": 61.171766188413,
+    "mse": 1.019873992368086
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:97": {
+    "avg_loss_per_round": 58.99250749019717,
+    "avg_regret_per_round": 58.7001304733543,
+    "mse": 0.7482548080250869
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:98": {
+    "avg_loss_per_round": 61.66892256450223,
+    "avg_regret_per_round": 61.3757136283124,
+    "mse": 1.042442611995773
+  },
+  "impact_epsilon_and_T_alpha0_runs.csv:99": {
+    "avg_loss_per_round": 60.954956408122044,
+    "avg_regret_per_round": 60.66243629285527,
+    "mse": 0.9772435212664179
+  },
+  "impact_topology_alpha0_runs.csv:10": {
+    "avg_loss_per_round": 249.529679471053,
+    "avg_regret_per_round": 248.3346539231901,
+    "mse": 1.1656876154395868
+  },
+  "impact_topology_alpha0_runs.csv:11": {
+    "avg_loss_per_round": 245.39278003383046,
+    "avg_regret_per_round": 244.1795461326879,
+    "mse": 1.0044255160882856
+  },
+  "impact_topology_alpha0_runs.csv:110": {
+    "avg_loss_per_round": 236.64323864716593,
+    "avg_regret_per_round": 235.46613438749245,
+    "mse": 0.7837057255524712
+  },
+  "impact_topology_alpha0_runs.csv:111": {
+    "avg_loss_per_round": 241.08094634474983,
+    "avg_regret_per_round": 239.90379282040197,
+    "mse": 0.9072631095365498
+  },
+  "impact_topology_alpha0_runs.csv:112": {
+    "avg_loss_per_round": 246.08466598021676,
+    "avg_regret_per_round": 244.91071587262414,
+    "mse": 1.0414086661421977
+  },
+  "impact_topology_alpha0_runs.csv:113": {
+    "avg_loss_per_round": 236.04138851072017,
+    "avg_regret_per_round": 234.8652328860733,
+    "mse": 0.7665750582765208
+  },
+  "impact_topology_alpha0_runs.csv:114": {
+    "avg_loss_per_round": 231.75981722717484,
+    "avg_regret_per_round": 230.58249362396865,
+    "mse": 0.6478452065169821
+  },
+  "impact_topology_alpha0_runs.csv:115": {
+    "avg_loss_per_round": 239.4208226762653,
+    "avg_regret_per_round": 238.24676236672093,
+    "mse": 0.8618534474421797
+  },
+  "impact_topology_alpha0_runs.csv:116": {
+    "avg_loss_per_round": 236.4625260902245,
+    "avg_regret_per_round": 235.28496636987933,
+    "mse": 0.7739879806405465
+  },
+  "impact_topology_alpha0_runs.csv:117": {
+    "avg_loss_per_round": 238.60282885525748,
+    "avg_regret_per_round": 237.42828742592525,
+    "mse": 0.8379294898427982
+  },
+  "impact_topology_alpha0_runs.csv:118": {
+    "avg_loss_per_round": 242.5897053829702,
+    "avg_regret_per_round": 241.41415974384364,
+    "mse": 0.9446920678883749
+  },
+  "impact_topology_alpha0_runs.csv:119": {
+    "avg_loss_per_round": 239.84427087910183,
+    "avg_regret_per_round": 238.66765507119572,
+    "mse": 0.8651178294160716
+  },
+  "impact_topology_alpha0_runs.csv:12": {
+    "avg_loss_per_round": 244.9349725030508,
+    "avg_regret_per_round": 243.83737882681268,
+    "mse": 1.0411530487131553
+  },
+  "impact_topology_alpha0_runs.csv:13": {
+    "avg_loss_per_round": 247.43118368121569,
+    "avg_regret_per_round": 246.26732893932723,
+    "mse": 1.016683921023029
+  },
+  "impact_topology_alpha0_runs.csv:130": {
+    "avg_loss_per_round": 234.20332228419753,
+    "avg_regret_per_round": 233.02661907677967,
+    "mse": 0.7114107220733731
+  },
+  "impact_topology_alpha0_runs.csv:131": {
+    "avg_loss_per_round": 237.06261895098174,
+    "avg_regret_per_round": 235.88575950769342,
+    "mse": 0.795611819792211
+  },
+  "impact_topology_alpha0_runs.csv:132": {
+    "avg_loss_per_round": 235.06456073118184,
+    "avg_regret_per_round": 233.8881827256594,
+    "mse": 0.7377404608574601
+  },
+  "impact_topology_alpha0_runs.csv:133": {
+    "avg_loss_per_round": 233.7377517159323,
+    "avg_regret_per_round": 232.56044478981767,
+    "mse": 0.6925160084969417
+  },
+  "impact_topology_alpha0_runs.csv:134": {
+    "avg_loss_per_round": 234.0560440078707,
+    "avg_regret_per_round": 232.8815972320256,
+    "mse": 0.7093096676810813
+  },
+  "impact_topology_alpha0_runs.csv:135": {
+    "avg_loss_per_round": 235.07458893804989,
+    "avg_regret_per_round": 233.89828778454373,
+    "mse": 0.7372867944673142
+  },
+  "impact_topology_alpha0_runs.csv:136": {
+    "avg_loss_per_round": 232.86640186300068,
+    "avg_regret_per_round": 231.69007151160568,
+    "mse": 0.6802823966313538
+  },
+  "impact_topology_alpha0_runs.csv:137": {
+    "avg_loss_per_round": 225.50357407660934,
+    "avg_regret_per_round": 224.3273580755298,
+    "mse": 0.46641876401524734
+  },
+  "impact_topology_alpha0_runs.csv:138": {
+    "avg_loss_per_round": 229.6769509371373,
+    "avg_regret_per_round": 228.50176859158856,
+    "mse": 0.5877305711061108
+  },
+  "impact_topology_alpha0_runs.csv:139": {
+    "avg_loss_per_round": 238.47867991634624,
+    "avg_regret_per_round": 237.3018461294345,
+    "mse": 0.8347464468812456
+  },
+  "impact_topology_alpha0_runs.csv:14": {
+    "avg_loss_per_round": 246.05612613989325,
+    "avg_regret_per_round": 244.88901850695777,
+    "mse": 1.0229384326915356
+  },
+  "impact_topology_alpha0_runs.csv:15": {
+    "avg_loss_per_round": 254.87463793270524,
+    "avg_regret_per_round": 253.6902934556945,
+    "mse": 1.3263603066176675
+  },
+  "impact_topology_alpha0_runs.csv:150": {
+    "avg_loss_per_round": 247.64404149724237,
+    "avg_regret_per_round": 246.49103693518495,
+    "mse": 1.110877263570438
+  },
+  "impact_topology_alpha0_runs.csv:151": {
+    "avg_loss_per_round": 243.6778995854879,
+    "avg_regret_per_round": 242.49463094393215,
+    "mse": 1.0331129674460904
+  },
+  "impact_topology_alpha0_runs.csv:152": {
+    "avg_loss_per_round": 255.14837098635635,
+    "avg_regret_per_round": 253.96116247437712,
+    "mse": 1.3218942857964355
+  },
+  "impact_topology_alpha0_runs.csv:153": {
+    "avg_loss_per_round": 251.26354471494702,
+    "avg_regret_per_round": 250.10072624164275,
+    "mse": 1.2168009508206243
+  },
+  "impact_topology_alpha0_runs.csv:154": {
+    "avg_loss_per_round": 254.4651142799874,
+    "avg_regret_per_round": 253.29722314264885,
+    "mse": 1.255080329344526
+  },
+  "impact_topology_alpha0_runs.csv:155": {
+    "avg_loss_per_round": 242.66386984082922,
+    "avg_regret_per_round": 241.43368505772156,
+    "mse": 0.9362170479429707
+  },
+  "impact_topology_alpha0_runs.csv:156": {
+    "avg_loss_per_round": 251.4454887527212,
+    "avg_regret_per_round": 250.29731418766195,
+    "mse": 1.1761384158057215
+  },
+  "impact_topology_alpha0_runs.csv:157": {
+    "avg_loss_per_round": 255.47147473637352,
+    "avg_regret_per_round": 254.2949955592793,
+    "mse": 1.3077913572365372
+  },
+  "impact_topology_alpha0_runs.csv:158": {
+    "avg_loss_per_round": 245.28461118082163,
+    "avg_regret_per_round": 244.1013686569193,
+    "mse": 0.9895872919001821
+  },
+  "impact_topology_alpha0_runs.csv:159": {
+    "avg_loss_per_round": 242.23117640650366,
+    "avg_regret_per_round": 241.04077764645382,
+    "mse": 0.9077782832298378
+  },
+  "impact_topology_alpha0_runs.csv:16": {
+    "avg_loss_per_round": 243.7696671560635,
+    "avg_regret_per_round": 242.6041189641691,
+    "mse": 1.0055692722300011
+  },
+  "impact_topology_alpha0_runs.csv:17": {
+    "avg_loss_per_round": 246.23332708912068,
+    "avg_regret_per_round": 245.02255177892283,
+    "mse": 1.058049424241203
+  },
+  "impact_topology_alpha0_runs.csv:170": {
+    "avg_loss_per_round": 241.97719991320974,
+    "avg_regret_per_round": 240.77155971174162,
+    "mse": 0.9742418241361933
+  },
+  "impact_topology_alpha0_runs.csv:171": {
+    "avg_loss_per_round": 256.92039242832544,
+    "avg_regret_per_round": 255.7775417293102,
+    "mse": 1.3503367107887563
+  },
+  "impact_topology_alpha0_runs.csv:172": {
+    "avg_loss_per_round": 244.84499242232758,
+    "avg_regret_per_round": 243.6771369316169,
+    "mse": 1.042959594058744
+  },
+  "impact_topology_alpha0_runs.csv:173": {
+    "avg_loss_per_round": 245.55498003461773,
+    "avg_regret_per_round": 244.36282520553158,
+    "mse": 1.054883127988205
+  },
+  "impact_topology_alpha0_runs.csv:174": {
+    "avg_loss_per_round": 257.33477479470645,
+    "avg_regret_per_round": 256.1644921899796,
+    "mse": 1.3334114519775766
+  },
+  "impact_topology_alpha0_runs.csv:175": {
+    "avg_loss_per_round": 256.8151090967435,
+    "avg_regret_per_round": 255.64747275195168,
+    "mse": 1.353322811988295
+  },
+  "impact_topology_alpha0_runs.csv:176": {
+    "avg_loss_per_round": 249.1818832599075,
+    "avg_regret_per_round": 247.996747338143,
+    "mse": 1.1736026626636518
+  },
+  "impact_topology_alpha0_runs.csv:177": {
+    "avg_loss_per_round": 247.06379957822776,
+    "avg_regret_per_round": 245.86922153126082,
+    "mse": 1.0381187571692452
+  },
+  "impact_topology_alpha0_runs.csv:178": {
+    "avg_loss_per_round": 245.20194490994172,
+    "avg_regret_per_round": 244.02002614658304,
+    "mse": 1.0487982021979942
+  },
+  "impact_topology_alpha0_runs.csv:179": {
+    "avg_loss_per_round": 264.77193184092465,
+    "avg_regret_per_round": 263.6010197499324,
+    "mse": 1.587368388392373
+  },
+  "impact_topology_alpha0_runs.csv:18": {
+    "avg_loss_per_round": 255.4651158680176,
+    "avg_regret_per_round": 254.32782079688116,
+    "mse": 1.2880834996712753
+  },
+  "impact_topology_alpha0_runs.csv:19": {
+    "avg_loss_per_round": 245.569783801226,
+    "avg_regret_per_round": 244.383609346158,
+    "mse": 1.015183664406509
+  },
+  "impact_topology_alpha0_runs.csv:190": {
+    "avg_loss_per_round": 252.89251988861992,
+    "avg_regret_per_round": 251.70632303528512,
+    "mse": 1.2290664965986653
+  },
+  "impact_topology_alpha0_runs.csv:191": {
+    "avg_loss_per_round": 254.93111354975886,
+    "avg_regret_per_round": 253.7598786659085,
+    "mse": 1.285260825949379
+  },
+  "impact_topology_alpha0_runs.csv:192": {
+    "avg_loss_per_round": 243.2183186457076,
+    "avg_regret_per_round": 242.04234707392254,
+    "mse": 0.9743158694541443
+  },
+  "impact_topology_alpha0_runs.csv:193": {
+    "avg_loss_per_round": 238.6320664190049,
+    "avg_regret_per_round": 237.46228606532318,
+    "mse": 0.840602389122883
+  },
+  "impact_topology_alpha0_runs.csv:194": {
+    "avg_loss_per_round": 253.4090746242452,
+    "avg_regret_per_round": 252.2329600718682,
+    "mse": 1.2473472637170686
+  },
+  "impact_topology_alpha0_runs.csv:195": {
+    "avg_loss_per_round": 251.42468474437896,
+    "avg_regret_per_round": 250.24547149737063,
+    "mse": 1.2024157470398182
+  },
+  "impact_topology_alpha0_runs.csv:196": {
+    "avg_loss_per_round": 250.33367199818397,
+    "avg_regret_per_round": 249.1488283864467,
+    "mse": 1.1784496613675726
+  },
+  "impact_topology_alpha0_runs.csv:197": {
+    "avg_loss_per_round": 241.3841470135655,
+    "avg_regret_per_round": 240.19703438978146,
+    "mse": 0.9090766083691755
+  },
+  "impact_topology_alpha0_runs.csv:198": {
+    "avg_loss_per_round": 236.9801035304298,
+    "avg_regret_per_round": 235.8120900659971,
+    "mse": 0.7929999392361935
+  },
+  "impact_topology_alpha0_runs.csv:199": {
+    "avg_loss_per_round": 248.00871936274754,
+    "avg_regret_per_round": 246.83313155290293,
+    "mse": 1.100269889450318
+  },
+  "impact_topology_alpha0_runs.csv:210": {
+    "avg_loss_per_round": 248.23221959081195,
+    "avg_regret_per_round": 247.05615496320138,
+    "mse": 1.109597996883756
+  },
+  "impact_topology_alpha0_runs.csv:211": {
+    "avg_loss_per_round": 251.57459826078906,
+    "avg_regret_per_round": 250.3975717431627,
+    "mse": 1.1945202810368138
+  },
+  "impact_topology_alpha0_runs.csv:212": {
+    "avg_loss_per_round": 238.48540558673503,
+    "avg_regret_per_round": 237.31170448937812,
+    "mse": 0.8395057701336668
+  },
+  "impact_topology_alpha0_runs.csv:213": {
+    "avg_loss_per_round": 251.41078995247352,
+    "avg_regret_per_round": 250.23152068177092,
+    "mse": 1.198653110584531
+  },
+  "impact_topology_alpha0_runs.csv:214": {
+    "avg_loss_per_round": 250.25911389519098,
+    "avg_regret_per_round": 249.0785191606958,
+    "mse": 1.1643107976702605
+  },
+  "impact_topology_alpha0_runs.csv:215": {
+    "avg_loss_per_round": 246.8403678680846,
+    "avg_regret_per_round": 245.66597453013398,
+    "mse": 1.0832891704540297
+  },
+  "impact_topology_alpha0_runs.csv:216": {
+    "avg_loss_per_round": 238.78756702976682,
+    "avg_regret_per_round": 237.61095063895317,
+    "mse": 0.8335815374081995
+  },
+  "impact_topology_alpha0_runs.csv:217": {
+    "avg_loss_per_round": 242.95893950427757,
+    "avg_regret_per_round": 241.7810157070179,
+    "mse": 0.9561163528494583
+  },
+  "impact_topology_alpha0_runs.csv:218": {
+    "avg_loss_per_round": 237.62693863882342,
+    "avg_regret_per_round": 236.44584490166724,
+    "mse": 0.8129933238183599
+  },
+  "impact_topology_alpha0_runs.csv:219": {
+    "avg_loss_per_round": 243.05697404364378,
+    "avg_regret_per_round": 241.87663937224133,
+    "mse": 0.9623808690615216
+  },
+  "impact_topology_alpha0_runs.csv:230": {
+    "avg_loss_per_round": 241.93100651641507,
+    "avg_regret_per_round": 240.75415084931043,
+    "mse": 0.9314925822209129
+  },
+  "impact_topology_alpha0_runs.csv:231": {
+    "avg_loss_per_round": 240.8476775575346,
+    "avg_regret_per_round": 239.66971398634624,
+    "mse": 0.9058170123082079
+  },
+  "impact_topology_alpha0_runs.csv:232": {
+    "avg_loss_per_round": 243.01219049444808,
+    "avg_regret_per_round": 241.83560571315832,
+    "mse": 0.9672532785523216
+  },
+  "impact_topology_alpha0_runs.csv:233": {
+    "avg_loss_per_round": 244.4535472561516,
+    "avg_regret_per_round": 243.27823018776587,
+    "mse": 1.0019162620098532
+  },
+  "impact_topology_alpha0_runs.csv:234": {
+    "avg_loss_per_round": 236.46300805830302,
+    "avg_regret_per_round": 235.2886482897405,
+    "mse": 0.7794290985755346
+  },
+  "impact_topology_alpha0_runs.csv:235": {
+    "avg_loss_per_round": 246.67202735562904,
+    "avg_regret_per_round": 245.49655161516273,
+    "mse": 1.0614369779481385
+  },
+  "impact_topology_alpha0_runs.csv:236": {
+    "avg_loss_per_round": 239.55720980951224,
+    "avg_regret_per_round": 238.38077889257994,
+    "mse": 0.8660831136792423
+  },
+  "impact_topology_alpha0_runs.csv:237": {
+    "avg_loss_per_round": 243.4336855070249,
+    "avg_regret_per_round": 242.25794496597348,
+    "mse": 0.9670498553841226
+  },
+  "impact_topology_alpha0_runs.csv:238": {
+    "avg_loss_per_round": 245.71387652398957,
+    "avg_regret_per_round": 244.53598277883106,
+    "mse": 1.0329956745274453
+  },
+  "impact_topology_alpha0_runs.csv:239": {
+    "avg_loss_per_round": 241.06863497853666,
+    "avg_regret_per_round": 239.8891837376887,
+    "mse": 0.9110234348048086
+  },
+  "impact_topology_alpha0_runs.csv:250": {
+    "avg_loss_per_round": 242.1688006671318,
+    "avg_regret_per_round": 240.99546509620728,
+    "mse": 0.9346330077254665
+  },
+  "impact_topology_alpha0_runs.csv:251": {
+    "avg_loss_per_round": 234.9580182464163,
+    "avg_regret_per_round": 233.78111907315653,
+    "mse": 0.7304409593542112
+  },
+  "impact_topology_alpha0_runs.csv:252": {
+    "avg_loss_per_round": 245.07558229752414,
+    "avg_regret_per_round": 243.89918004515883,
+    "mse": 1.0153123526807042
+  },
+  "impact_topology_alpha0_runs.csv:253": {
+    "avg_loss_per_round": 243.1014276437185,
+    "avg_regret_per_round": 241.92391082418592,
+    "mse": 0.9627687852688159
+  },
+  "impact_topology_alpha0_runs.csv:254": {
+    "avg_loss_per_round": 235.62603894477417,
+    "avg_regret_per_round": 234.45001420831176,
+    "mse": 0.7544370281256374
+  },
+  "impact_topology_alpha0_runs.csv:255": {
+    "avg_loss_per_round": 244.625075336582,
+    "avg_regret_per_round": 243.44672513253178,
+    "mse": 1.0078457720896583
+  },
+  "impact_topology_alpha0_runs.csv:256": {
+    "avg_loss_per_round": 238.61975914548202,
+    "avg_regret_per_round": 237.44650796216487,
+    "mse": 0.8339601220368664
+  },
+  "impact_topology_alpha0_runs.csv:257": {
+    "avg_loss_per_round": 237.84046732558377,
+    "avg_regret_per_round": 236.66361500879677,
+    "mse": 0.8129942623918599
+  },
+  "impact_topology_alpha0_runs.csv:258": {
+    "avg_loss_per_round": 238.02015600419244,
+    "avg_regret_per_round": 236.8438020141174,
+    "mse": 0.8202471607634193
+  },
+  "impact_topology_alpha0_runs.csv:259": {
+    "avg_loss_per_round": 242.40286054369486,
+    "avg_regret_per_round": 241.2271272910104,
+    "mse": 0.9430706553415751
+  },
+  "impact_topology_alpha0_runs.csv:270": {
+    "avg_loss_per_round": 233.33428571811515,
+    "avg_regret_per_round": 232.15695236379744,
+    "mse": 0.691661103287712
+  },
+  "impact_topology_alpha0_runs.csv:271": {
+    "avg_loss_per_round": 233.62548215564357,
+    "avg_regret_per_round": 232.44962091653426,
+    "mse": 0.6916766619698599
+  },
+  "impact_topology_alpha0_runs.csv:272": {
+    "avg_loss_per_round": 235.03356513154554,
+    "avg_regret_per_round": 233.85747935932133,
+    "mse": 0.7377464813127083
+  },
+  "impact_topology_alpha0_runs.csv:273": {
+    "avg_loss_per_round": 232.4059070679563,
+    "avg_regret_per_round": 231.2288473848973,
+    "mse": 0.6612772944777264
+  },
+  "impact_topology_alpha0_runs.csv:274": {
+    "avg_loss_per_round": 241.24678660616365,
+    "avg_regret_per_round": 240.06904908469403,
+    "mse": 0.9089865930008505
+  },
+  "impact_topology_alpha0_runs.csv:275": {
+    "avg_loss_per_round": 232.43781301576675,
+    "avg_regret_per_round": 231.26282929218536,
+    "mse": 0.6639396159028262
+  },
+  "impact_topology_alpha0_runs.csv:276": {
+    "avg_loss_per_round": 229.8473182229384,
+    "avg_regret_per_round": 228.67084603088884,
+    "mse": 0.5845061130554893
+  },
+  "impact_topology_alpha0_runs.csv:277": {
+    "avg_loss_per_round": 230.34622430622892,
+    "avg_regret_per_round": 229.17022454059034,
+    "mse": 0.6010098972178933
+  },
+  "impact_topology_alpha0_runs.csv:278": {
+    "avg_loss_per_round": 236.8915927266592,
+    "avg_regret_per_round": 235.7160292128143,
+    "mse": 0.7868229990607818
+  },
+  "impact_topology_alpha0_runs.csv:279": {
+    "avg_loss_per_round": 230.94543387069552,
+    "avg_regret_per_round": 229.7698077536418,
+    "mse": 0.6245991447974487
+  },
+  "impact_topology_alpha0_runs.csv:290": {
+    "avg_loss_per_round": 255.49735805467583,
+    "avg_regret_per_round": 254.3121991104577,
+    "mse": 1.3951709296276067
+  },
+  "impact_topology_alpha0_runs.csv:291": {
+    "avg_loss_per_round": 247.4412461884597,
+    "avg_regret_per_round": 246.28875879907775,
+    "mse": 1.0579539098924304
+  },
+  "impact_topology_alpha0_runs.csv:292": {
+    "avg_loss_per_round": 246.67905462924878,
+    "avg_regret_per_round": 245.46510945252075,
+    "mse": 1.0557156558882268
+  },
+  "impact_topology_alpha0_runs.csv:293": {
+    "avg_loss_per_round": 244.34452805318637,
+    "avg_regret_per_round": 243.2043675161533,
+    "mse": 1.08217301921123
+  },
+  "impact_topology_alpha0_runs.csv:294": {
+    "avg_loss_per_round": 247.55211512526435,
+    "avg_regret_per_round": 246.3911716808132,
+    "mse": 1.116875745285887
+  },
+  "impact_topology_alpha0_runs.csv:295": {
+    "avg_loss_per_round": 251.61668791894647,
+    "avg_regret_per_round": 250.43960335969086,
+    "mse": 1.161722427198286
+  },
+  "impact_topology_alpha0_runs.csv:296": {
+    "avg_loss_per_round": 258.71684141151263,
+    "avg_regret_per_round": 257.54811772899615,
+    "mse": 1.3570158348653196
+  },
+  "impact_topology_alpha0_runs.csv:297": {
+    "avg_loss_per_round": 247.22257112298234,
+    "avg_regret_per_round": 246.06117697889783,
+    "mse": 1.1023152305367812
+  },
+  "impact_topology_alpha0_runs.csv:298": {
+    "avg_loss_per_round": 248.29866796926152,
+    "avg_regret_per_round": 247.10564129814054,
+    "mse": 1.0964911889954572
+  },
+  "impact_topology_alpha0_runs.csv:299": {
+    "avg_loss_per_round": 242.11146948262666,
+    "avg_regret_per_round": 240.94876640631927,
+    "mse": 0.9252545361583377
+  },
+  "impact_topology_alpha0_runs.csv:30": {
+    "avg_loss_per_round": 251.459167182003,
+    "avg_regret_per_round": 250.26660685174298,
+    "mse": 1.2188760476207938
+  },
+  "impact_topology_alpha0_runs.csv:31": {
+    "avg_loss_per_round": 246.73187288906456,
+    "avg_regret_per_round": 245.54034724213886,
+    "mse": 1.083933138430791
+  },
+  "impact_topology_alpha0_runs.csv:310": {
+    "avg_loss_per_round": 236.12319941490765,
+    "avg_regret_per_round": 234.95331235456305,
+    "mse": 0.9363942451447741
+  },
+  "impact_topology_alpha0_runs.csv:311": {
+    "avg_loss_per_round": 244.6084820027842,
+    "avg_regret_per_round": 243.42772516172658,
+    "mse": 1.1841750111606995
+  },
+  "impact_topology_alpha0_runs.csv:312": {
+    "avg_loss_per_round": 242.5279211847353,
+    "avg_regret_per_round": 241.36755306752957,
+    "mse": 1.1255694306322528
+  },
+  "impact_topology_alpha0_runs.csv:313": {
+    "avg_loss_per_round": 246.1599760922148,
+    "avg_regret_per_round": 245.01034350526564,
+    "mse": 1.1959226377389487
+  },
+  "impact_topology_alpha0_runs.csv:314": {
+    "avg_loss_per_round": 234.94236167718833,
+    "avg_regret_per_round": 233.7545633386842,
+    "mse": 0.9192748104812083
+  },
+  "impact_topology_alpha0_runs.csv:315": {
+    "avg_loss_per_round": 234.10660760645465,
+    "avg_regret_per_round": 232.9325934430549,
+    "mse": 0.8764726065083268
+  },
+  "impact_topology_alpha0_runs.csv:316": {
+    "avg_loss_per_round": 248.52242251067563,
+    "avg_regret_per_round": 247.33971683641298,
+    "mse": 1.2965734398657098
+  },
+  "impact_topology_alpha0_runs.csv:317": {
+    "avg_loss_per_round": 248.7273333995902,
+    "avg_regret_per_round": 247.55815547632352,
+    "mse": 1.3270385074578424
+  },
+  "impact_topology_alpha0_runs.csv:318": {
+    "avg_loss_per_round": 236.88430821748136,
+    "avg_regret_per_round": 235.68196810554787,
+    "mse": 1.0052556564871413
+  },
+  "impact_topology_alpha0_runs.csv:319": {
+    "avg_loss_per_round": 243.4810941234971,
+    "avg_regret_per_round": 242.3006889748354,
+    "mse": 1.1332634365165841
+  },
+  "impact_topology_alpha0_runs.csv:32": {
+    "avg_loss_per_round": 254.67122375427198,
+    "avg_regret_per_round": 253.48209083074138,
+    "mse": 1.2562187198287351
+  },
+  "impact_topology_alpha0_runs.csv:33": {
+    "avg_loss_per_round": 249.0244017128025,
+    "avg_regret_per_round": 247.85717328368062,
+    "mse": 1.1267496077838017
+  },
+  "impact_topology_alpha0_runs.csv:330": {
+    "avg_loss_per_round": 176.14185674754134,
+    "avg_regret_per_round": 174.97000921738595,
+    "mse": 1.1191970254512713
+  },
+  "impact_topology_alpha0_runs.csv:331": {
+    "avg_loss_per_round": 178.7132343349921,
+    "avg_regret_per_round": 177.52737121065437,
+    "mse": 1.1914557577750262
+  },
+  "impact_topology_alpha0_runs.csv:332": {
+    "avg_loss_per_round": 177.60407539257605,
+    "avg_regret_per_round": 176.42419615912289,
+    "mse": 1.1811336144691966
+  },
+  "impact_topology_alpha0_runs.csv:333": {
+    "avg_loss_per_round": 176.97225614869782,
+    "avg_regret_per_round": 175.79697147547057,
+    "mse": 1.15559253178402
+  },
+  "impact_topology_alpha0_runs.csv:334": {
+    "avg_loss_per_round": 172.55960081936485,
+    "avg_regret_per_round": 171.3790149574641,
+    "mse": 1.0303002206519494
+  },
+  "impact_topology_alpha0_runs.csv:335": {
+    "avg_loss_per_round": 176.24174762636375,
+    "avg_regret_per_round": 175.06847497158216,
+    "mse": 1.1329668920479747
+  },
+  "impact_topology_alpha0_runs.csv:336": {
+    "avg_loss_per_round": 176.75997128302328,
+    "avg_regret_per_round": 175.58020643632813,
+    "mse": 1.1566984604076498
+  },
+  "impact_topology_alpha0_runs.csv:337": {
+    "avg_loss_per_round": 174.6181386722549,
+    "avg_regret_per_round": 173.44744738496163,
+    "mse": 1.0980830741303695
+  },
+  "impact_topology_alpha0_runs.csv:338": {
+    "avg_loss_per_round": 180.69405412856716,
+    "avg_regret_per_round": 179.52591037028424,
+    "mse": 1.2628188411821433
+  },
+  "impact_topology_alpha0_runs.csv:339": {
+    "avg_loss_per_round": 169.33330635338447,
+    "avg_regret_per_round": 168.16488141669328,
+    "mse": 0.9485122940627594
+  },
+  "impact_topology_alpha0_runs.csv:34": {
+    "avg_loss_per_round": 248.65282693992296,
+    "avg_regret_per_round": 247.46239142838368,
+    "mse": 1.0879576268728497
+  },
+  "impact_topology_alpha0_runs.csv:35": {
+    "avg_loss_per_round": 254.8960728221353,
+    "avg_regret_per_round": 253.70689843295943,
+    "mse": 1.261706873189034
+  },
+  "impact_topology_alpha0_runs.csv:350": {
+    "avg_loss_per_round": 129.84467795059263,
+    "avg_regret_per_round": 128.67356414967267,
+    "mse": 0.9939788544128871
+  },
+  "impact_topology_alpha0_runs.csv:351": {
+    "avg_loss_per_round": 117.44735231870813,
+    "avg_regret_per_round": 116.27081120106294,
+    "mse": 0.6549643113814652
+  },
+  "impact_topology_alpha0_runs.csv:352": {
+    "avg_loss_per_round": 139.41536690677802,
+    "avg_regret_per_round": 138.24222105899833,
+    "mse": 1.2555244362713782
+  },
+  "impact_topology_alpha0_runs.csv:353": {
+    "avg_loss_per_round": 132.32791172463826,
+    "avg_regret_per_round": 131.15002586269586,
+    "mse": 1.0655485437074603
+  },
+  "impact_topology_alpha0_runs.csv:354": {
+    "avg_loss_per_round": 132.64343186803313,
+    "avg_regret_per_round": 131.46963315105378,
+    "mse": 1.0695630350154564
+  },
+  "impact_topology_alpha0_runs.csv:355": {
+    "avg_loss_per_round": 127.93011980978697,
+    "avg_regret_per_round": 126.76479443936681,
+    "mse": 0.9357567688361882
+  },
+  "impact_topology_alpha0_runs.csv:356": {
+    "avg_loss_per_round": 137.5750421722487,
+    "avg_regret_per_round": 136.39600987700348,
+    "mse": 1.2022846454104772
+  },
+  "impact_topology_alpha0_runs.csv:357": {
+    "avg_loss_per_round": 128.9011747538601,
+    "avg_regret_per_round": 127.72813321153657,
+    "mse": 0.9680814848819573
+  },
+  "impact_topology_alpha0_runs.csv:358": {
+    "avg_loss_per_round": 142.8877687982493,
+    "avg_regret_per_round": 141.7089010210163,
+    "mse": 1.3509515484521866
+  },
+  "impact_topology_alpha0_runs.csv:359": {
+    "avg_loss_per_round": 127.20570182747342,
+    "avg_regret_per_round": 126.02266568493384,
+    "mse": 0.9220347620654086
+  },
+  "impact_topology_alpha0_runs.csv:36": {
+    "avg_loss_per_round": 247.3118881555244,
+    "avg_regret_per_round": 246.13515355839996,
+    "mse": 1.1074928605059953
+  },
+  "impact_topology_alpha0_runs.csv:37": {
+    "avg_loss_per_round": 251.30930848428645,
+    "avg_regret_per_round": 250.12296058794334,
+    "mse": 1.1957685550699362
+  },
+  "impact_topology_alpha0_runs.csv:370": {
+    "avg_loss_per_round": 94.70453473850036,
+    "avg_regret_per_round": 93.53510620200171,
+    "mse": 0.8749198684543938
+  },
+  "impact_topology_alpha0_runs.csv:371": {
+    "avg_loss_per_round": 105.62849636005522,
+    "avg_regret_per_round": 104.4526911394846,
+    "mse": 1.180764195801798
+  },
+  "impact_topology_alpha0_runs.csv:372": {
+    "avg_loss_per_round": 101.72487391450052,
+    "avg_regret_per_round": 100.55058173646661,
+    "mse": 1.040749295538434
+  },
+  "impact_topology_alpha0_runs.csv:373": {
+    "avg_loss_per_round": 93.12482042288016,
+    "avg_regret_per_round": 91.94950713305613,
+    "mse": 0.8347002368361635
+  },
+  "impact_topology_alpha0_runs.csv:374": {
+    "avg_loss_per_round": 95.41355093255346,
+    "avg_regret_per_round": 94.23960606973975,
+    "mse": 0.8896108365296999
+  },
+  "impact_topology_alpha0_runs.csv:375": {
+    "avg_loss_per_round": 93.55703583759016,
+    "avg_regret_per_round": 92.38176868766904,
+    "mse": 0.8487485694684312
+  },
+  "impact_topology_alpha0_runs.csv:376": {
+    "avg_loss_per_round": 89.08638223941402,
+    "avg_regret_per_round": 87.91210525470153,
+    "mse": 0.72224295161776
+  },
+  "impact_topology_alpha0_runs.csv:377": {
+    "avg_loss_per_round": 95.75341053057967,
+    "avg_regret_per_round": 94.57314290950319,
+    "mse": 0.9016765111289659
+  },
+  "impact_topology_alpha0_runs.csv:378": {
+    "avg_loss_per_round": 93.9395620075221,
+    "avg_regret_per_round": 92.76357213222869,
+    "mse": 0.8569349089375965
+  },
+  "impact_topology_alpha0_runs.csv:379": {
+    "avg_loss_per_round": 80.43575314552598,
+    "avg_regret_per_round": 79.26056428422321,
+    "mse": 0.4760616393786033
+  },
+  "impact_topology_alpha0_runs.csv:38": {
+    "avg_loss_per_round": 245.85004701232162,
+    "avg_regret_per_round": 244.68337368686034,
+    "mse": 1.0443663927923814
+  },
+  "impact_topology_alpha0_runs.csv:39": {
+    "avg_loss_per_round": 245.5587672060625,
+    "avg_regret_per_round": 244.37398942078084,
+    "mse": 1.0146743246388552
+  },
+  "impact_topology_alpha0_runs.csv:390": {
+    "avg_loss_per_round": 80.85203630828056,
+    "avg_regret_per_round": 79.67650351973406,
+    "mse": 1.017463462454754
+  },
+  "impact_topology_alpha0_runs.csv:391": {
+    "avg_loss_per_round": 77.42677131898608,
+    "avg_regret_per_round": 76.25113007716605,
+    "mse": 0.9235195932651132
+  },
+  "impact_topology_alpha0_runs.csv:392": {
+    "avg_loss_per_round": 72.1249777938038,
+    "avg_regret_per_round": 70.94585151432274,
+    "mse": 0.7640848699382871
+  },
+  "impact_topology_alpha0_runs.csv:393": {
+    "avg_loss_per_round": 67.70485817294687,
+    "avg_regret_per_round": 66.52686980270825,
+    "mse": 0.6520234788112116
+  },
+  "impact_topology_alpha0_runs.csv:394": {
+    "avg_loss_per_round": 70.13679616818095,
+    "avg_regret_per_round": 68.95842491750803,
+    "mse": 0.726391933340722
+  },
+  "impact_topology_alpha0_runs.csv:395": {
+    "avg_loss_per_round": 83.40261784132329,
+    "avg_regret_per_round": 82.22820204870551,
+    "mse": 1.0987462210544225
+  },
+  "impact_topology_alpha0_runs.csv:396": {
+    "avg_loss_per_round": 96.8954417358169,
+    "avg_regret_per_round": 95.72003159520895,
+    "mse": 1.4751413733463223
+  },
+  "impact_topology_alpha0_runs.csv:397": {
+    "avg_loss_per_round": 75.60582883179576,
+    "avg_regret_per_round": 74.42868059001582,
+    "mse": 0.8807798811096553
+  },
+  "impact_topology_alpha0_runs.csv:398": {
+    "avg_loss_per_round": 82.50989888847182,
+    "avg_regret_per_round": 81.3336961907322,
+    "mse": 1.0731874919359727
+  },
+  "impact_topology_alpha0_runs.csv:399": {
+    "avg_loss_per_round": 71.53024240838113,
+    "avg_regret_per_round": 70.35291996384649,
+    "mse": 0.7664626660715245
+  },
+  "impact_topology_alpha0_runs.csv:410": {
+    "avg_loss_per_round": 54.37323354767678,
+    "avg_regret_per_round": 53.19808374577034,
+    "mse": 0.6668168804772642
+  },
+  "impact_topology_alpha0_runs.csv:411": {
+    "avg_loss_per_round": 55.751309850611236,
+    "avg_regret_per_round": 54.57431020381921,
+    "mse": 0.7281981498699003
+  },
+  "impact_topology_alpha0_runs.csv:412": {
+    "avg_loss_per_round": 50.708214575776,
+    "avg_regret_per_round": 49.53262073424746,
+    "mse": 0.5817799993892337
+  },
+  "impact_topology_alpha0_runs.csv:413": {
+    "avg_loss_per_round": 56.06239924710665,
+    "avg_regret_per_round": 54.8842955016714,
+    "mse": 0.7359125942120709
+  },
+  "impact_topology_alpha0_runs.csv:414": {
+    "avg_loss_per_round": 59.75906696501092,
+    "avg_regret_per_round": 58.58311138433183,
+    "mse": 0.8408064454469685
+  },
+  "impact_topology_alpha0_runs.csv:415": {
+    "avg_loss_per_round": 53.53662755065979,
+    "avg_regret_per_round": 52.35946161356873,
+    "mse": 0.6442620359474045
+  },
+  "impact_topology_alpha0_runs.csv:416": {
+    "avg_loss_per_round": 50.91757600447243,
+    "avg_regret_per_round": 49.74145040057766,
+    "mse": 0.5427292116646273
+  },
+  "impact_topology_alpha0_runs.csv:417": {
+    "avg_loss_per_round": 53.47037225137317,
+    "avg_regret_per_round": 52.29278240645138,
+    "mse": 0.6563000300425477
+  },
+  "impact_topology_alpha0_runs.csv:418": {
+    "avg_loss_per_round": 63.57703664788911,
+    "avg_regret_per_round": 62.40225453877031,
+    "mse": 0.9472173473870222
+  },
+  "impact_topology_alpha0_runs.csv:419": {
+    "avg_loss_per_round": 63.05917393478575,
+    "avg_regret_per_round": 61.88293112062324,
+    "mse": 0.9223159467351773
+  },
+  "impact_topology_alpha0_runs.csv:50": {
+    "avg_loss_per_round": 249.48157683610586,
+    "avg_regret_per_round": 248.29328413207426,
+    "mse": 1.1373595931555505
+  },
+  "impact_topology_alpha0_runs.csv:51": {
+    "avg_loss_per_round": 244.02993681108038,
+    "avg_regret_per_round": 242.85615603989493,
+    "mse": 0.9992763184151358
+  },
+  "impact_topology_alpha0_runs.csv:52": {
+    "avg_loss_per_round": 243.63423502174842,
+    "avg_regret_per_round": 242.44870701834944,
+    "mse": 0.9628079185604865
+  },
+  "impact_topology_alpha0_runs.csv:53": {
+    "avg_loss_per_round": 244.33147793609012,
+    "avg_regret_per_round": 243.15869155708452,
+    "mse": 0.9968677633105086
+  },
+  "impact_topology_alpha0_runs.csv:54": {
+    "avg_loss_per_round": 237.9330730444304,
+    "avg_regret_per_round": 236.76425591674405,
+    "mse": 0.8186207738404584
+  },
+  "impact_topology_alpha0_runs.csv:55": {
+    "avg_loss_per_round": 252.0491710186335,
+    "avg_regret_per_round": 250.88078058380515,
+    "mse": 1.1976444127674561
+  },
+  "impact_topology_alpha0_runs.csv:56": {
+    "avg_loss_per_round": 243.9017764888475,
+    "avg_regret_per_round": 242.71948036917047,
+    "mse": 0.9913580207461872
+  },
+  "impact_topology_alpha0_runs.csv:57": {
+    "avg_loss_per_round": 243.32191475565673,
+    "avg_regret_per_round": 242.1492199266605,
+    "mse": 0.9776018835661378
+  },
+  "impact_topology_alpha0_runs.csv:58": {
+    "avg_loss_per_round": 246.65196304151218,
+    "avg_regret_per_round": 245.4801345058125,
+    "mse": 1.0421579372353642
+  },
+  "impact_topology_alpha0_runs.csv:59": {
+    "avg_loss_per_round": 252.24636995317678,
+    "avg_regret_per_round": 251.04742222466172,
+    "mse": 1.1989379184827358
+  },
+  "impact_topology_alpha0_runs.csv:70": {
+    "avg_loss_per_round": 239.28315157637672,
+    "avg_regret_per_round": 238.11370474014024,
+    "mse": 0.8590518976657585
+  },
+  "impact_topology_alpha0_runs.csv:71": {
+    "avg_loss_per_round": 248.40282019441653,
+    "avg_regret_per_round": 247.2257729950735,
+    "mse": 1.1073075550719553
+  },
+  "impact_topology_alpha0_runs.csv:72": {
+    "avg_loss_per_round": 246.46073881173186,
+    "avg_regret_per_round": 245.29094328291532,
+    "mse": 1.0484162716611207
+  },
+  "impact_topology_alpha0_runs.csv:73": {
+    "avg_loss_per_round": 232.79655739118996,
+    "avg_regret_per_round": 231.61396028454578,
+    "mse": 0.675029296970061
+  },
+  "impact_topology_alpha0_runs.csv:74": {
+    "avg_loss_per_round": 246.0659303535523,
+    "avg_regret_per_round": 244.8965798887631,
+    "mse": 1.0552501978930462
+  },
+  "impact_topology_alpha0_runs.csv:75": {
+    "avg_loss_per_round": 247.54423006553202,
+    "avg_regret_per_round": 246.3615705031591,
+    "mse": 1.0741503829997778
+  },
+  "impact_topology_alpha0_runs.csv:76": {
+    "avg_loss_per_round": 253.90376715998485,
+    "avg_regret_per_round": 252.72511406019333,
+    "mse": 1.2649626909095941
+  },
+  "impact_topology_alpha0_runs.csv:77": {
+    "avg_loss_per_round": 237.14265949143268,
+    "avg_regret_per_round": 235.96606264178354,
+    "mse": 0.7924367108734448
+  },
+  "impact_topology_alpha0_runs.csv:78": {
+    "avg_loss_per_round": 251.99510776246544,
+    "avg_regret_per_round": 250.81960928195838,
+    "mse": 1.2048906045554388
+  },
+  "impact_topology_alpha0_runs.csv:79": {
+    "avg_loss_per_round": 254.47832408997212,
+    "avg_regret_per_round": 253.30020470040856,
+    "mse": 1.2838937081994188
+  },
+  "impact_topology_alpha0_runs.csv:90": {
+    "avg_loss_per_round": 242.6631579087255,
+    "avg_regret_per_round": 241.4846812214493,
+    "mse": 0.9384382660353499
+  },
+  "impact_topology_alpha0_runs.csv:91": {
+    "avg_loss_per_round": 242.53990378065347,
+    "avg_regret_per_round": 241.36138197630936,
+    "mse": 0.9527916416709948
+  },
+  "impact_topology_alpha0_runs.csv:92": {
+    "avg_loss_per_round": 243.91280858158441,
+    "avg_regret_per_round": 242.7288043301282,
+    "mse": 0.9898032829494531
+  },
+  "impact_topology_alpha0_runs.csv:93": {
+    "avg_loss_per_round": 243.29576369544492,
+    "avg_regret_per_round": 242.12206807384425,
+    "mse": 0.9738810766385464
+  },
+  "impact_topology_alpha0_runs.csv:94": {
+    "avg_loss_per_round": 242.1245508786916,
+    "avg_regret_per_round": 240.94861691549568,
+    "mse": 0.9404090393940062
+  },
+  "impact_topology_alpha0_runs.csv:95": {
+    "avg_loss_per_round": 241.37518903728525,
+    "avg_regret_per_round": 240.19561589096074,
+    "mse": 0.9148169216125982
+  },
+  "impact_topology_alpha0_runs.csv:96": {
+    "avg_loss_per_round": 244.2720788777966,
+    "avg_regret_per_round": 243.0968861803154,
+    "mse": 0.9940664519972231
+  },
+  "impact_topology_alpha0_runs.csv:97": {
+    "avg_loss_per_round": 240.8133205949808,
+    "avg_regret_per_round": 239.63985007810226,
+    "mse": 0.9036144456052724
+  },
+  "impact_topology_alpha0_runs.csv:98": {
+    "avg_loss_per_round": 244.49243931142357,
+    "avg_regret_per_round": 243.31639058440786,
+    "mse": 0.9994966018850563
+  },
+  "impact_topology_alpha0_runs.csv:99": {
+    "avg_loss_per_round": 242.2981224289807,
+    "avg_regret_per_round": 241.12214850539124,
+    "mse": 0.9397619076756978
+  }
+}
