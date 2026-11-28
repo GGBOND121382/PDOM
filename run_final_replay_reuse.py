@@ -322,7 +322,7 @@ def merge(rows,out):
             if r['algorithm'] in {s['algorithm'] for s in SPECS}:
                 k=identity(r)
                 new.update(checked_metrics(all_results[k],int(r['num_nodes'])))
-                new['implementation']=new['parameter_version']=VERSION
+                new['parameter_version']=VERSION  # Preserve algorithm implementation tag (paper-alg1-v1 for Vanilla).
                 counts['replaced']+=1
             else:
                 counts['unchanged']+=1
@@ -331,7 +331,7 @@ def merge(rows,out):
         actual=read_csv((dest/f).read_bytes())
         for old,new in zip(rr,actual):
             if old['algorithm'] in {s['algorithm'] for s in SPECS}:
-                require(all(old[k]==new[k] for k in old if k not in (*METRICS,'implementation','parameter_version')),'Changed original identity')
+                require(all(old[k]==new[k] for k in old if k not in (*METRICS,'parameter_version')),'Changed original identity')
             else:
                 require(old==new,'Changed frozen row')
     require(counts=={'replaced':840,'unchanged':2240},'Wrong merge count')
