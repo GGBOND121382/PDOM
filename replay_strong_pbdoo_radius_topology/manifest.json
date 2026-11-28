@@ -1,0 +1,19 @@
+{
+  "archive_sha256": "46b8ff2a10ecbe5f1bfc9c9bf69dc13cde9285bff78547904cd56cd3aacf335f",
+  "count": 27,
+  "dataset_sha256": "ef04f6a57b4607de2c205ee9c220d68c4684634d087a88b2fed699a79bd9cf7d",
+  "implementation": {
+    "adv_setting/loop_PBDOO_LR_strong.py": "2d2f24b04de7c0512d16709078f7174c9ff7396ab6d6f60361a9d4ece0fb8705",
+    "diagnose_strong_pbdoo_radius.py": "bee34a57bf227741eb5500c36070aaecbe9a90c03c5dcc03f59e485a79bb6dac",
+    "final_tuned_support.py": "e9b2898f577e8f0c82025cc1beea6fc67546d1034e962b79287fb27e3056ff5c",
+    "optimization_utils/BanditLogisticRegression.py": "f4f9b9ed7db7a4cef635964940093d7dde720e4f62a097ab2341acf4790c26bb",
+    "optimization_utils/adv_setting_utils.py": "abda5b21af51c0c0530601a8006ebc198f2195c94adbb629e0ea4fa4165ff7cb"
+  },
+  "multipliers": [
+    0.08
+  ],
+  "numpy": "2.3.5",
+  "python": "3.13.14 (main, Jun 23 2026, 15:18:27) [Clang 22.1.3 ]",
+  "scope": "topology",
+  "version": "strong-pbdoo-radius-diagnostics-v1"
+}

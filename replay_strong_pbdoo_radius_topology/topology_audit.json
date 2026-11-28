@@ -1,0 +1,32 @@
+{
+  "branch": "strong-pbdoo-radius-diagnostics",
+  "source_commit": "4fbcf270f49a8cc97db944833fdc19198b02ea2b",
+  "algorithm": "PBDOO-strong",
+  "candidate": "0.08",
+  "candidate_runs": 27,
+  "reproduction_checks": 3,
+  "structural_audit": "PASS",
+  "means": {
+    "cycle": [
+      47.300185868929006,
+      47.12337876971694,
+      46.96415424368035
+    ],
+    "grid": [
+      47.33317161078138,
+      47.2889701208371,
+      46.95454180008722
+    ],
+    "complete": [
+      47.27228848946602,
+      34.93721635575773,
+      22.745141460459763
+    ]
+  },
+  "horizons": [
+    100000,
+    300000,
+    1000000
+  ],
+  "parameter_selection": "NOT PERFORMED"
+}
